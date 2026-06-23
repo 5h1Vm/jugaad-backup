@@ -21,19 +21,85 @@ class NotionBrowser:
     def __init__(self, download_dir: Path):
         self.download_dir = Path(download_dir)
 
-    def _run_export(self, export_format: str):
+    def _launch(self):
+        playwright = sync_playwright().start()
 
-        existing = export_files(self.download_dir)
+        context = playwright.chromium.launch_persistent_context(
+            user_data_dir=PROFILE_DIR,
+            headless=False,
+            executable_path="/usr/bin/microsoft-edge"
+        )
+
+        page = context.new_page()
+
+        return playwright, context, page
+
+    def _open_export_dialog(self, page):
+
+        page.goto(WORKSPACE_URL)
+
+        page.wait_for_load_state("networkidle")
+
+        page.locator('[aria-label="Actions"]').click()
+
+        page.get_by_text("Export", exact=True).click()
+
+        page.wait_for_selector(
+            '[role="dialog"][aria-label="Export"]'
+        )
+
+    def _configure_export(
+        self,
+        page,
+        export_format
+    ):
+
+        if export_format == "HTML":
+
+            page.get_by_text("Markdown & CSV").click()
+
+            page.get_by_text("HTML").click()
+
+        # Include subpages
+        switches = page.locator(
+            'input[role="switch"]'
+        )
+
+        count = switches.count()
+
+        for i in range(count):
+
+            try:
+                switches.nth(i).check()
+            except Exception:
+                pass
+
+    def _run_export(self, export_format):
+
+        existing = export_files(
+            self.download_dir
+        )
+
         known_count = len(existing)
 
-        print(f'[+] Starting Notion export: {export_format}')
-        print(f'[+] Workspace URL: {WORKSPACE_URL}')
-        print(f'[+] Profile dir: {PROFILE_DIR}')
-        print(f'[+] Profile name: {PROFILE_NAME}')
-        print('[+] Include subpages: ON')
-        print('[+] Database views: Default view')
-        print('[+] Page content: Everything')
-        print('[+] Waiting for new export ZIP')
+        playwright = None
+        context = None
+
+        try:
+
+            playwright, context, page = self._launch()
+
+            self._open_export_dialog(page)
+
+            self._configure_export(
+                page,
+                export_format
+            )
+
+            page.get_by_text(
+                "Export",
+                exact=True
+            ).last.click()
 
             archive = wait_for_new_export(
                 self.download_dir,
