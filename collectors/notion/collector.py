@@ -1,10 +1,11 @@
 from pathlib import Path
-import json
 from datetime import datetime
+
+from .browser_export import detect_existing_exports
+from .state import save_state
 
 
 def collect(workspace):
-
     workspace = Path(workspace)
     workspace.mkdir(parents=True, exist_ok=True)
 
@@ -14,25 +15,23 @@ def collect(workspace):
     inventory_dir = workspace / 'inventory'
     inventory_dir.mkdir(parents=True, exist_ok=True)
 
-    state_dir = Path('state/notion')
-    state_dir.mkdir(parents=True, exist_ok=True)
-
-    state_file = state_dir / 'state.json'
-
     print('[+] Notion collector')
     print(f'[+] Export directory: {export_dir}')
     print(f'[+] Inventory directory: {inventory_dir}')
-    print('[+] Browser export implementation pending')
-    print('[+] API inventory implementation pending')
+
+    exports = detect_existing_exports()
 
     state = {
         'last_run': datetime.utcnow().isoformat(),
-        'status': 'placeholder',
+        'status': 'ready-for-browser-export',
         'export_dir': str(export_dir),
-        'inventory_dir': str(inventory_dir)
+        'inventory_dir': str(inventory_dir),
+        'known_export_count': len(exports)
     }
 
-    with open(state_file, 'w') as f:
-        json.dump(state, f, indent=2)
+    save_state(state)
+
+    print(f'[+] Existing exports detected: {len(exports)}')
+    print('[+] Browser export engine next step')
 
     return True
