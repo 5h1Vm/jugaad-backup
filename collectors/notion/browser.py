@@ -27,79 +27,64 @@ class NotionBrowser:
         context = playwright.chromium.launch_persistent_context(
             user_data_dir=PROFILE_DIR,
             headless=False,
-            executable_path="/usr/bin/microsoft-edge"
+            accept_downloads=True,
+            executable_path="/usr/bin/microsoft-edge",
+            args=[
+                "--no-sandbox",
+                "--disable-dev-shm-usage"
+            ]
         )
 
-        page = context.new_page()
+        page = context.pages[0] if context.pages else context.new_page()
 
         return playwright, context, page
 
     def _open_export_dialog(self, page):
 
-        page.goto(WORKSPACE_URL)
+        page.goto(WORKSPACE_URL, wait_until="domcontentloaded")
 
-        page.wait_for_load_state("networkidle")
-
-        page.locator('[aria-label="Actions"]').click()
+        page.locator('[aria-label="Actions"]').click(timeout=30000)
 
         page.get_by_text("Export", exact=True).click()
 
         page.wait_for_selector(
-            '[role="dialog"][aria-label="Export"]'
+            '[role="dialog"][aria-label="Export"]',
+            timeout=30000
         )
 
-    def _configure_export(
-        self,
-        page,
-        export_format
-    ):
+    def _configure_export(self, page, export_format):
 
         if export_format == "HTML":
-
             page.get_by_text("Markdown & CSV").click()
+            page.get_by_text("HTML", exact=True).click()
 
-            page.get_by_text("HTML").click()
-
-        # Include subpages
-        switches = page.locator(
-            'input[role="switch"]'
-        )
+        switches = page.locator('input[role="switch"]')
 
         count = switches.count()
 
-        for i in range(count):
-
+        for i in range(min(count, 3)):
             try:
-                switches.nth(i).check()
+                if not switches.nth(i).is_checked():
+                    switches.nth(i).check()
             except Exception:
                 pass
 
     def _run_export(self, export_format):
 
-        existing = export_files(
-            self.download_dir
-        )
-
+        existing = export_files(self.download_dir)
         known_count = len(existing)
 
         playwright = None
         context = None
 
         try:
-
             playwright, context, page = self._launch()
 
             self._open_export_dialog(page)
+            self._configure_export(page, export_format)
 
-            self._configure_export(
-                page,
-                export_format
-            )
-
-            page.get_by_text(
-                "Export",
-                exact=True
-            ).last.click()
+            export_buttons = page.locator('[role="button"]').filter(has_text="Export")
+            export_buttons.last.click()
 
             archive = wait_for_new_export(
                 self.download_dir,
@@ -109,7 +94,7 @@ class NotionBrowser:
 
             if archive is None:
                 raise RuntimeError(
-                    f"No new export detected for {export_format}"
+                    f'No new export detected for {export_format}'
                 )
 
             wait_for_stable_file(archive)
@@ -117,7 +102,6 @@ class NotionBrowser:
             return archive
 
         finally:
-
             if context:
                 context.close()
 
@@ -125,20 +109,13 @@ class NotionBrowser:
                 playwright.stop()
 
     def export_markdown_csv(self):
-        return self._run_export(
-            "Markdown & CSV"
-        )
+        return self._run_export("Markdown & CSV")
 
     def export_html(self):
-        return self._run_export(
-            "HTML"
-        )
+        return self._run_export("HTML")
 
     def export_workspace(self):
-
         return {
-            "markdown_csv":
-                self.export_markdown_csv(),
-            "html":
-                self.export_html()
+            "markdown_csv": self.export_markdown_csv(),
+            "html": self.export_html()
         }
