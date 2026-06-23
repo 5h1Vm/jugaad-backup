@@ -1,13 +1,54 @@
 from pathlib import Path
 
+from .export import (
+    export_files,
+    wait_for_new_export,
+    wait_for_stable_file
+)
+
+from .config import (
+    EXPORT_TIMEOUT_MINUTES
+)
+
 
 class NotionBrowser:
 
     def __init__(self, download_dir: Path):
-        self.download_dir = download_dir
+        self.download_dir = Path(download_dir)
 
     def export_workspace(self):
-        print('[+] Notion browser automation initialized')
-        print('[+] Expected mode: existing logged-in browser profile')
-        print(f'[+] Download path: {self.download_dir}')
-        return True
+
+        existing = export_files(
+            self.download_dir
+        )
+
+        known_count = len(existing)
+
+        print("[+] Notion browser automation initialized")
+        print(f"[+] Known exports: {known_count}")
+        print(f"[+] Download path: {self.download_dir}")
+
+        print(
+            "[+] Waiting for export trigger..."
+        )
+
+        archive = wait_for_new_export(
+            self.download_dir,
+            known_count,
+            EXPORT_TIMEOUT_MINUTES
+        )
+
+        if archive is None:
+            raise RuntimeError(
+                "No new Notion export detected"
+            )
+
+        wait_for_stable_file(
+            archive
+        )
+
+        print(
+            f"[+] Export completed: {archive}"
+        )
+
+        return archive
