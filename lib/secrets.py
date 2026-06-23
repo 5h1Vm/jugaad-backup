@@ -1,35 +1,26 @@
+from pathlib import Path
 import subprocess
 
-def get_config():
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+CONFIG_FILE = PROJECT_ROOT / "config" / "backup.conf"
 
+
+def get_config():
     cfg = {}
 
-    with open("/opt/backup/config/backup.conf") as f:
-
+    with open(CONFIG_FILE) as f:
         for line in f:
-
             line = line.strip()
-
-            if not line:
+            if not line or line.startswith("#"):
                 continue
-
-            if line.startswith("#"):
-                continue
-
-            key, value = line.split(
-                "=",
-                1
-            )
-
+            key, value = line.split("=", 1)
             cfg[key] = value
 
     return cfg
 
 
 def load_env():
-
     cfg = get_config()
-
     env = {}
 
     output = subprocess.check_output([
@@ -41,20 +32,10 @@ def load_env():
     ])
 
     for line in output.decode().splitlines():
-
         line = line.strip()
-
-        if not line:
+        if not line or line.startswith("#"):
             continue
-
-        if line.startswith("#"):
-            continue
-
-        key, value = line.split(
-            "=",
-            1
-        )
-
+        key, value = line.split("=", 1)
         env[key] = value
 
     return env
