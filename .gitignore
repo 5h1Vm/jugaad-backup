@@ -29,3 +29,8 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+
+# Archives
+*.gz
+*.tar.gz
+*.zip
