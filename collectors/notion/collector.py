@@ -4,6 +4,8 @@ from datetime import datetime
 from .browser_export import export_status_snapshot
 from .state import save_state
 from .api_inventory import build_inventory
+from .browser import NotionBrowser
+from .config import DOWNLOAD_DIR
 
 
 def collect(workspace):
@@ -22,17 +24,11 @@ def collect(workspace):
 
     snapshot = export_status_snapshot()
 
-    inventory_file = build_inventory(
-        export_dir,
-        inventory_dir
-    )
-
     state = {
         'last_run': datetime.utcnow().isoformat(),
         'status': 'ready-for-browser-export',
         'export_dir': str(export_dir),
         'inventory_dir': str(inventory_dir),
-        'inventory_file': str(inventory_file),
         'browser': snapshot
     }
 
@@ -43,6 +39,19 @@ def collect(workspace):
     if snapshot['latest_export']:
         print(f"[+] Latest export: {snapshot['latest_export']}")
 
+    print('[+] Browser export subsystem available')
+    print(f'[+] Download directory: {DOWNLOAD_DIR}')
+
+    browser = NotionBrowser(DOWNLOAD_DIR)
+
+    inventory_file = build_inventory(
+        export_dir,
+        inventory_dir
+    )
+
     print(f'[+] Inventory written: {inventory_file}')
 
-    return True
+    return {
+        'browser': browser,
+        'inventory_file': inventory_file
+    }
