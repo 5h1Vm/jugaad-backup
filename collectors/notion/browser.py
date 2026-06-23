@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from playwright.sync_api import sync_playwright
+
 from .export import (
     export_files,
     wait_for_new_export,
@@ -19,54 +21,58 @@ class NotionBrowser:
     def __init__(self, download_dir: Path):
         self.download_dir = Path(download_dir)
 
-    def open_workspace(self):
-        print(f'[+] Opening workspace: {WORKSPACE_URL}')
-
-    def open_export_dialog(self):
-        print('[+] Opening Actions menu')
-        print('[+] Opening Export dialog')
-
-    def configure_export(self, export_format: str):
-        print(f'[+] Export format: {export_format}')
-        print('[+] Database views: Default view')
-        print('[+] Page content: Everything')
-        print('[+] Include subpages: ON')
-
     def _run_export(self, export_format: str):
 
         existing = export_files(self.download_dir)
         known_count = len(existing)
 
+        print(f'[+] Starting Notion export: {export_format}')
         print(f'[+] Workspace URL: {WORKSPACE_URL}')
         print(f'[+] Profile dir: {PROFILE_DIR}')
         print(f'[+] Profile name: {PROFILE_NAME}')
+        print('[+] Include subpages: ON')
+        print('[+] Database views: Default view')
+        print('[+] Page content: Everything')
+        print('[+] Waiting for new export ZIP')
 
-        self.open_workspace()
-        self.open_export_dialog()
-        self.configure_export(export_format)
+            archive = wait_for_new_export(
+                self.download_dir,
+                known_count,
+                EXPORT_TIMEOUT_MINUTES
+            )
 
-        archive = wait_for_new_export(
-            self.download_dir,
-            known_count,
-            EXPORT_TIMEOUT_MINUTES
-        )
+            if archive is None:
+                raise RuntimeError(
+                    f"No new export detected for {export_format}"
+                )
 
-        if archive is None:
-            raise RuntimeError(f'No new export detected for {export_format}')
+            wait_for_stable_file(archive)
 
-        wait_for_stable_file(archive)
+            return archive
 
-        print(f'[+] Export completed: {archive}')
-        return archive
+        finally:
+
+            if context:
+                context.close()
+
+            if playwright:
+                playwright.stop()
 
     def export_markdown_csv(self):
-        return self._run_export('Markdown & CSV')
+        return self._run_export(
+            "Markdown & CSV"
+        )
 
     def export_html(self):
-        return self._run_export('HTML')
+        return self._run_export(
+            "HTML"
+        )
 
     def export_workspace(self):
+
         return {
-            'markdown_csv': self.export_markdown_csv(),
-            'html': self.export_html()
+            "markdown_csv":
+                self.export_markdown_csv(),
+            "html":
+                self.export_html()
         }
