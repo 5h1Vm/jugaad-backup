@@ -15,6 +15,38 @@ from .manifest import build_manifest
 from .archive import build_archive
 from .verify import verify_archive
 
+def run_notion(workspace):
+
+    from collectors.notion.collector import collect
+
+    collect(
+        str(workspace)
+    )
+
+if (
+    CFG.get(
+        "ENABLE_NOTION",
+        "false"
+    ).lower()
+    == "true"
+):
+
+    try:
+
+        print(
+            "[+] Running Notion collector"
+        )
+
+        run_notion(
+            day_dir / "notion"
+        )
+
+    except Exception as e:
+
+        print(
+            f"[-] Notion failed: {e}"
+        )
+
 def run_cloudflare(workspace):
 
     from collectors.cloudflare.collector import collect
