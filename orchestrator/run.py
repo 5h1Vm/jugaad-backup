@@ -15,6 +15,7 @@ from .manifest import build_manifest
 from .archive import build_archive
 from .verify import verify_archive
 
+
 def run_notion(workspace):
 
     from collectors.notion.collector import collect
@@ -23,29 +24,6 @@ def run_notion(workspace):
         str(workspace)
     )
 
-if (
-    CFG.get(
-        "ENABLE_NOTION",
-        "false"
-    ).lower()
-    == "true"
-):
-
-    try:
-
-        print(
-            "[+] Running Notion collector"
-        )
-
-        run_notion(
-            day_dir / "notion"
-        )
-
-    except Exception as e:
-
-        print(
-            f"[-] Notion failed: {e}"
-        )
 
 def run_cloudflare(workspace):
 
@@ -59,6 +37,7 @@ def run_cloudflare(workspace):
         str(workspace)
     )
 
+
 def run_m365(workspace):
 
     from collectors.m365.collector import collect
@@ -66,6 +45,7 @@ def run_m365(workspace):
     collect(
         str(workspace)
     )
+
 
 def main():
 
@@ -87,10 +67,6 @@ def main():
         f"[+] Workspace: {day_dir}"
     )
 
-    #
-    # Collectors
-    #
-
     if (
         CFG.get(
             "ENABLE_M365",
@@ -107,16 +83,29 @@ def main():
             day_dir / "m365"
         )
 
-    if CFG["ENABLE_CLOUDFLARE"] == "true":
+    if CFG.get("ENABLE_CLOUDFLARE", "false").lower() == "true":
 
-    	run_cloudflare(
+        run_cloudflare(
             day_dir / "cloudflare"
         )
 
+    if CFG.get("ENABLE_NOTION", "false").lower() == "true":
 
-    #
-    # Manifest
-    #
+        try:
+
+            print(
+                "[+] Running Notion collector"
+            )
+
+            run_notion(
+                day_dir / "notion"
+            )
+
+        except Exception as e:
+
+            print(
+                f"[-] Notion failed: {e}"
+            )
 
     print(
         "[+] Building manifest"
@@ -126,10 +115,6 @@ def main():
         day_dir
     )
 
-    #
-    # Archive
-    #
-
     print(
         "[+] Building archive"
     )
@@ -138,10 +123,6 @@ def main():
         today
     )
 
-    #
-    # Verify
-    #
-
     print(
         "[+] Verifying archive"
     )
@@ -149,10 +130,6 @@ def main():
     verify_archive(
         today
     )
-
-    #
-    # Store manifest
-    #
 
     manifest_target = (
         BACKUP_TARGET /
@@ -192,7 +169,7 @@ def main():
 
         print(
             f"[+] Removed {item}"
-    )
+        )
 
 
 if __name__ == "__main__":
