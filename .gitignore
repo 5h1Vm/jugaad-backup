@@ -1,0 +1,25 @@
+# Secrets
+config/runtime/runtime.key
+config/keys/archive.key
+config/secrets.env.age
+config/secrets.env.age.bak
+
+# Generated backups
+workspace/
+restore/
+placeholder-backupvault/
+
+# Logs
+logs/
+
+# Python
+__pycache__/
+*.pyc
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
