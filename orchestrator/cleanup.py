@@ -3,7 +3,7 @@ from datetime import timedelta
 
 import shutil
 
-from config import (
+from .config import (
     WORKSPACE,
     WORKSPACE_RETENTION_DAYS
 )
@@ -13,9 +13,7 @@ def cleanup_workspace():
 
     cutoff = (
         datetime.now()
-        - timedelta(
-            days=WORKSPACE_RETENTION_DAYS
-        )
+        - timedelta(days=WORKSPACE_RETENTION_DAYS)
     )
 
     deleted = []
@@ -26,22 +24,15 @@ def cleanup_workspace():
             continue
 
         try:
-
             day = datetime.strptime(
                 item.name,
-                "%Y-%m-%d"
+                '%Y-%m-%d'
             )
-
-        except:
-
+        except Exception:
             continue
 
         if day < cutoff:
-
             shutil.rmtree(item)
-
-            deleted.append(
-                item.name
-            )
+            deleted.append(item.name)
 
     return deleted
