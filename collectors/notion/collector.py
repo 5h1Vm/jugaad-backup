@@ -1,7 +1,7 @@
 from pathlib import Path
 from datetime import datetime
 
-from .browser_export import detect_existing_exports
+from .browser_export import export_status_snapshot
 from .state import save_state
 
 
@@ -19,19 +19,20 @@ def collect(workspace):
     print(f'[+] Export directory: {export_dir}')
     print(f'[+] Inventory directory: {inventory_dir}')
 
-    exports = detect_existing_exports()
+    snapshot = export_status_snapshot()
 
     state = {
         'last_run': datetime.utcnow().isoformat(),
         'status': 'ready-for-browser-export',
         'export_dir': str(export_dir),
         'inventory_dir': str(inventory_dir),
-        'known_export_count': len(exports)
+        'browser': snapshot
     }
 
     save_state(state)
 
-    print(f'[+] Existing exports detected: {len(exports)}')
-    print('[+] Browser export engine next step')
+    print(f"[+] Existing exports detected: {snapshot['known_export_count']}")
+    if snapshot['latest_export']:
+        print(f"[+] Latest export: {snapshot['latest_export']}")
 
     return True
