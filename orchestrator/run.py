@@ -1,40 +1,23 @@
-import sys
-
-sys.path.insert(
-    0,
-    "/opt/backup"
-)
-
 from datetime import date
 
 from pathlib import Path
 
 import shutil
 
-from config import (
+from .config import (
     WORKSPACE,
     BACKUP_TARGET,
     CFG
 )
 
-from cleanup import cleanup_workspace
-
-from manifest import build_manifest
-
-from archive import build_archive
-
-from verify import verify_archive
+from .cleanup import cleanup_workspace
+from .manifest import build_manifest
+from .archive import build_archive
+from .verify import verify_archive
 
 def run_cloudflare(workspace):
 
-    import sys
-
-    sys.path.insert(
-        0,
-        "/opt/backup/collectors/cloudflare"
-    )
-
-    from collector import collect
+    from collectors.cloudflare.collector import collect
 
     print(
         "[+] Running Cloudflare collector"
