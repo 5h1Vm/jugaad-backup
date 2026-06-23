@@ -3,11 +3,17 @@ config/runtime/runtime.key
 config/keys/archive.key
 config/secrets.env.age
 config/secrets.env.age.bak
+config/keys
+config/public
+config/runtime
 
 # Generated backups
 workspace/
 restore/
 placeholder-backupvault/
+
+# Config Files
+*.conf
 
 # Logs
 logs/
