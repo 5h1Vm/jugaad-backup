@@ -1,36 +1,41 @@
-# Secrets
-config/runtime/runtime.key
-config/keys/archive.key
-config/secrets.env.age
-config/secrets.env.age.bak
-config/keys
-config/public
-config/runtime
-
-# Generated backups
-workspace/
-restore/
-placeholder-backupvault/
-
-# Config Files
-*.conf
-
-# Logs
-logs/
-
 # Python
 __pycache__/
 *.pyc
+
+# Playwright
+playwright-artifacts-*
+/tmp/playwright-artifacts-*
+
+# Generated Exports & Archives
+*ExportBlock*.zip
+*.zip
+*.gz
+*.tar.gz
+
+# Workspace Outputs / Runtime State
+workspace/
+restore/
+state/
+logs/
+
+# Secrets
+config/runtime/
+config/keys/
+config/public/
+config/secrets.env.age
+config/secrets.env.age.bak
+
+# Configuration Files
+*.conf
 
 # IDE
 .vscode/
 .idea/
 
-# OS
+# OS Files
 .DS_Store
 Thumbs.db
 
-# Archives
-*.gz
-*.tar.gz
-*.zip
+# Local Browser Profile
+honestbackup-profile/
+honestbackup-profile.tar.gz
