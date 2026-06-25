@@ -1,43 +1,91 @@
+# =========================
 # Python
+# =========================
+
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
-# Playwright
-playwright-artifacts-*
-/tmp/playwright-artifacts-*
 
-# Generated Exports & Archives
-*ExportBlock*.zip
-*.zip
-*.gz
-*.tar.gz
-*age
+# =========================
+# Secrets / Credentials
+# =========================
+
+*.age
 *.tar.zst.age
+*.pem
+*.key
+*.env
+*.secret
+*.token
 
-# Workspace Outputs / Runtime State
-workspace/
-restore/
-state/
-logs/
-
-# Secrets
 config/runtime/
 config/keys/
 config/public/
 config/secrets.env.age
 config/secrets.env.age.bak
 
-# Configuration Files
+
+# =========================
+# Archives / Backups / Exports
+# =========================
+
+*.tar
+*.tar.zst
+*.tar.gz
+*.gz
+*.zip
+
+*ExportBlock*.zip
+
+
+# =========================
+# Workspace / Runtime Data
+# =========================
+
+workspace/
+restore/
+state/
+logs/
+
+placeholder-backupvault/
+
+
+# =========================
+# Playwright
+# =========================
+
+playwright-artifacts-*
+/tmp/playwright-artifacts-*
+
+
+# =========================
+# Configuration
+# =========================
+
 *.conf
 
+
+# =========================
 # IDE
+# =========================
+
 .vscode/
 .idea/
 
+
+# =========================
 # OS Files
+# =========================
+
 .DS_Store
 Thumbs.db
 
+
+# =========================
 # Local Browser Profile
+# =========================
+
 honestbackup-profile/
 honestbackup-profile.tar.gz
