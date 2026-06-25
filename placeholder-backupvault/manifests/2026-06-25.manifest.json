@@ -1,0 +1,183 @@
+{
+    "date": "2026-06-25",
+    "file_count": 44,
+    "total_size": 5697710,
+    "files": [
+        {
+            "path": "notion/manifest.json",
+            "size": 1490
+        },
+        {
+            "path": "m365/security/riskDetections.json",
+            "size": 2
+        },
+        {
+            "path": "m365/security/secureScore.json",
+            "size": 2203530
+        },
+        {
+            "path": "m365/snapshots/conditionalAccessPolicies.json",
+            "size": 12332
+        },
+        {
+            "path": "m365/snapshots/organization.json",
+            "size": 18154
+        },
+        {
+            "path": "m365/snapshots/servicePrincipals.json",
+            "size": 2103299
+        },
+        {
+            "path": "m365/snapshots/applications.json",
+            "size": 20587
+        },
+        {
+            "path": "m365/snapshots/domains.json",
+            "size": 818
+        },
+        {
+            "path": "m365/snapshots/users.json",
+            "size": 2654
+        },
+        {
+            "path": "m365/snapshots/roles.json",
+            "size": 3490
+        },
+        {
+            "path": "m365/snapshots/namedLocations.json",
+            "size": 2
+        },
+        {
+            "path": "m365/snapshots/groups.json",
+            "size": 21470
+        },
+        {
+            "path": "m365/audit/directoryAudits.json",
+            "size": 1486
+        },
+        {
+            "path": "m365/audit/signins.json",
+            "size": 3232
+        },
+        {
+            "path": "m365/audit/provisioning.json",
+            "size": 2
+        },
+        {
+            "path": "notion/api/pages.json",
+            "size": 952018
+        },
+        {
+            "path": "notion/api/data_sources_full.json",
+            "size": 3111
+        },
+        {
+            "path": "notion/api/users.json",
+            "size": 679
+        },
+        {
+            "path": "notion/api/statistics.json",
+            "size": 206
+        },
+        {
+            "path": "notion/api/inventory.json",
+            "size": 28607
+        },
+        {
+            "path": "notion/api/data_sources.json",
+            "size": 3053
+        },
+        {
+            "path": "notion/browser/html_export.zip",
+            "size": 111611
+        },
+        {
+            "path": "notion/browser/markdown_export.zip",
+            "size": 24358
+        },
+        {
+            "path": "notion/api/rows/a072140a-df94-8364-9113-07ea21165718.json",
+            "size": 2523
+        },
+        {
+            "path": "cloudflare/security/waf-packages.json",
+            "size": 189
+        },
+        {
+            "path": "cloudflare/security/filters.json",
+            "size": 189
+        },
+        {
+            "path": "cloudflare/security/rate-limits.json",
+            "size": 412
+        },
+        {
+            "path": "cloudflare/security/firewall-rules.json",
+            "size": 189
+        },
+        {
+            "path": "cloudflare/zerotrust/access-policies.json",
+            "size": 2762
+        },
+        {
+            "path": "cloudflare/zerotrust/gateway-rules.json",
+            "size": 2932
+        },
+        {
+            "path": "cloudflare/zerotrust/access-users.json",
+            "size": 1985
+        },
+        {
+            "path": "cloudflare/zerotrust/device-posture.json",
+            "size": 261
+        },
+        {
+            "path": "cloudflare/zerotrust/access-groups.json",
+            "size": 191
+        },
+        {
+            "path": "cloudflare/zerotrust/service-tokens.json",
+            "size": 191
+        },
+        {
+            "path": "cloudflare/zerotrust/access-apps.json",
+            "size": 4308
+        },
+        {
+            "path": "cloudflare/zerotrust/devices.json",
+            "size": 3315
+        },
+        {
+            "path": "cloudflare/zerotrust/tunnels.json",
+            "size": 2299
+        },
+        {
+            "path": "cloudflare/zerotrust/identity-providers.json",
+            "size": 1255
+        },
+        {
+            "path": "cloudflare/zone/dnssec.json",
+            "size": 299
+        },
+        {
+            "path": "cloudflare/zone/rulesets.json",
+            "size": 1609
+        },
+        {
+            "path": "cloudflare/zone/zone.json",
+            "size": 1908
+        },
+        {
+            "path": "cloudflare/zone/zone-settings.json",
+            "size": 7007
+        },
+        {
+            "path": "cloudflare/zone/dns-records.json",
+            "size": 7617
+        },
+        {
+            "path": "cloudflare/audit/audit-logs.json",
+            "size": 140078
+        }
+    ]
+}
