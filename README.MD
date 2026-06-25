@@ -2,11 +2,6 @@
 
 > **Compliance-first Backup Framework for Microsoft 365, Cloudflare and Notion**
 
-![Python](https://img.shields.io/badge/python-3.12-blue)
-![Platform](https://img.shields.io/badge/platform-Linux-green)
-![License](https://img.shields.io/badge/license-MIT-orange)
-![Status](https://img.shields.io/badge/status-Active-success)
-
 ---
 
 # Overview
@@ -170,44 +165,15 @@ Rows --> Manifest
 
 ```mermaid
 flowchart TD
-
-Start
-
-↓
-
-Collectors
-
-↓
-
-Workspace
-
-↓
-
-Manifest
-
-↓
-
-Archive
-
-↓
-
-Zstandard Compression
-
-↓
-
-Age Encryption
-
-↓
-
-SHA256 Verification
-
-↓
-
-Backup Storage
-
-↓
-
-Workspace Cleanup
+    Start --> Collectors
+    Collectors --> Workspace
+    Workspace --> Manifest
+    Manifest --> Archive
+    Archive --> Zstandard_Compression
+    Zstandard_Compression --> Age_Encryption
+    Age_Encryption --> SHA256_Verification
+    SHA256_Verification --> Backup_Storage
+    Backup_Storage --> Workspace_Cleanup
 ```
 
 ---
@@ -216,22 +182,17 @@ Workspace Cleanup
 
 ```
 workspace/
-
 └── YYYY-MM-DD/
-
     ├── m365/
-    │
     │   ├── audit/
     │   ├── security/
     │   └── snapshots/
-    │
     ├── cloudflare/
     │
     │   ├── audit/
     │   ├── security/
     │   ├── zerotrust/
     │   └── zone/
-    │
     └── notion/
         │
         ├── browser/
@@ -272,24 +233,16 @@ Archives are encrypted using **age** before leaving the workstation.
 
 ```mermaid
 flowchart LR
+    A[backup.conf]
+    B[secrets.env.age]
+    C[age Decryption]
+    D[Runtime Variables]
+    E[Collectors]
 
-backup.conf
-
--->
-
-secrets.env.age
-
--->
-
-age Decryption
-
--->
-
-Runtime Variables
-
--->
-
-Collectors
+    A --> B
+    B --> C
+    C --> D
+    D --> E
 ```
 
 Only non-sensitive configuration remains inside **backup.conf**.
@@ -410,7 +363,7 @@ Archives remain preserved.
 | ------------- | ------------- | -------- | ----- | -------------- | --- |
 | Microsoft 365 | ✅             | ✅        | ✅     | ❌              | ✅   |
 | Cloudflare    | ✅             | ✅        | ✅     | ❌              | ✅   |
-| Notion        | ✅             | ✅        | N/A   | ✅              | ✅   |
+| Notion        | ✅             | ✅        | —      | ✅              | ✅   |
 
 ---
 
@@ -466,7 +419,7 @@ python3 -m orchestrator.cleanup
 * Backblaze B2 Storage Backend
 * Generic S3 Storage Backend
 * Local HDD Synchronization
-* Incremental Backup Scheduling
+* Incremental Backup Schedulinga
 * Structured Logging
 * Health Reporting
 * Notification Support
