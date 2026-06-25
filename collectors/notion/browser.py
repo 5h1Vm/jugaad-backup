@@ -6,6 +6,7 @@ from .config import (
     WORKSPACE_URL,
     PROFILE_DIR,
     EXPORT_TIMEOUT_MINUTES,
+    BROWSER_EXECUTABLE,
 )
 
 
@@ -14,8 +15,9 @@ STEP_WAIT_MS = 1500
 
 
 class NotionBrowser:
-    def __init__(self, download_dir: Path):
-        self.download_dir = Path(download_dir)
+
+    def __init__(self):
+        pass
 
     def _wait(self, page, ms=STEP_WAIT_MS):
         page.wait_for_timeout(ms)
@@ -27,7 +29,7 @@ class NotionBrowser:
             user_data_dir=PROFILE_DIR,
             headless=False,
             accept_downloads=True,
-            executable_path="/usr/bin/microsoft-edge",
+            executable_path=BROWSER_EXECUTABLE,
             args=[
                 "--no-sandbox",
                 "--disable-dev-shm-usage",
@@ -70,9 +72,8 @@ class NotionBrowser:
     def _select_export_format(
         self,
         page,
-        export_format
+        export_format,
     ):
-
         dialog = page.locator(
             '[role="dialog"][aria-label="Export"]'
         )
@@ -89,25 +90,22 @@ class NotionBrowser:
         )
 
         if current.count() == 0:
-
             current = (
                 dialog.get_by_role(
                     "button",
-                    name="Markdown & CSV"
+                    name="Markdown & CSV",
                 )
             )
 
         if current.count() == 0:
-
             current = (
                 dialog.get_by_role(
                     "button",
-                    name="PDF"
+                    name="PDF",
                 )
             )
 
         if current.count() == 0:
-
             raise RuntimeError(
                 "Could not locate export format selector"
             )
@@ -121,7 +119,7 @@ class NotionBrowser:
         #
         option = page.get_by_text(
             export_format,
-            exact=True
+            exact=True,
         )
 
         option.click()
@@ -133,7 +131,9 @@ class NotionBrowser:
         )
 
     def _select_default_view(self, page):
-        dialog = page.locator('[role="dialog"][aria-label="Export"]')
+        dialog = page.locator(
+            '[role="dialog"][aria-label="Export"]'
+        )
 
         try:
             default_button = dialog.get_by_role(
@@ -153,11 +153,11 @@ class NotionBrowser:
             )
 
             if current_view_button.count() == 0:
-                current_view_button = dialog.locator(
-                    '[role="button"]'
-                ).filter(
-                    has_text="Current view"
-                ).first
+                current_view_button = (
+                    dialog.locator('[role="button"]')
+                    .filter(has_text="Current view")
+                    .first
+                )
 
             current_view_button.click()
 
@@ -191,13 +191,18 @@ class NotionBrowser:
         print("[+] Ensuring Include Subpages enabled")
 
         try:
-            switches = page.locator('input[role="switch"]')
+            switches = page.locator(
+                'input[role="switch"]'
+            )
+
             count = switches.count()
 
             print(f"[+] Switch count: {count}")
 
             if count < 1:
-                raise RuntimeError("No switches found in export dialog")
+                raise RuntimeError(
+                    "No switches found in export dialog"
+                )
 
             include_subpages = switches.nth(0)
 
@@ -212,19 +217,29 @@ class NotionBrowser:
             print(f"[+] Final state: {after}")
 
             if not after:
-                raise RuntimeError("Failed to enable Include Subpages")
+                raise RuntimeError(
+                    "Failed to enable Include Subpages"
+                )
 
         except Exception as e:
             print(f"[!] Include Subpages error: {e}")
             raise
 
-    def _configure_export(self, page, export_format):
+    def _configure_export(
+        self,
+        page,
+        export_format,
+    ):
         print()
         print("=" * 60)
         print(f"[+] Configuring {export_format}")
         print("=" * 60)
 
-        self._select_export_format(page, export_format)
+        self._select_export_format(
+            page,
+            export_format,
+        )
+
         self._select_default_view(page)
         self._enable_subpages(page)
 
@@ -232,16 +247,26 @@ class NotionBrowser:
 
         print("[+] Export configuration complete")
 
-    def _download_export(self, page):
-        dialog = page.locator('[role="dialog"][aria-label="Export"]')
+    def _download_export(
+        self,
+        page,
+        download_dir: Path,
+        export_format,
+    ):
+        dialog = page.locator(
+            '[role="dialog"][aria-label="Export"]'
+        )
 
-        export_buttons = dialog.locator('[role="button"]').filter(
-            has_text="Export"
+        export_buttons = (
+            dialog.locator('[role="button"]')
+            .filter(has_text="Export")
         )
 
         print("[+] Starting export")
 
-        with page.expect_download(timeout=EXPORT_TIMEOUT_MS) as dl:
+        with page.expect_download(
+            timeout=EXPORT_TIMEOUT_MS
+        ) as dl:
             export_buttons.last.click()
 
         print("[+] Export requested")
@@ -250,19 +275,35 @@ class NotionBrowser:
 
         print("[+] Download detected")
 
-        filename = download.suggested_filename
+        download_dir = Path(download_dir)
+
+        download_dir.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        if export_format == "Markdown & CSV":
+            filename = "markdown_export.zip"
+        elif export_format == "HTML":
+            filename = "html_export.zip"
+        else:
+            filename = download.suggested_filename
+
         print(f"[+] Filename: {filename}")
 
-        self.download_dir.mkdir(parents=True, exist_ok=True)
+        target = download_dir / filename
 
-        target = self.download_dir / filename
         download.save_as(str(target))
 
         print(f"[+] Saved: {target}")
 
         return target
 
-    def _run_export(self, export_format):
+    def _run_export(
+        self,
+        export_format,
+        download_dir,
+    ):
         playwright = None
         context = None
 
@@ -270,9 +311,17 @@ class NotionBrowser:
             playwright, context, page = self._launch()
 
             self._open_export_dialog(page)
-            self._configure_export(page, export_format)
 
-            return self._download_export(page)
+            self._configure_export(
+                page,
+                export_format,
+            )
+
+            return self._download_export(
+                page,
+                download_dir,
+                export_format,
+            )
 
         finally:
             try:
@@ -287,17 +336,37 @@ class NotionBrowser:
             except Exception:
                 pass
 
-    def export_markdown_csv(self):
-        return self._run_export("Markdown & CSV")
+    def export_markdown_csv(
+        self,
+        download_dir,
+    ):
+        return self._run_export(
+            "Markdown & CSV",
+            download_dir,
+        )
 
-    def export_html(self):
-        return self._run_export("HTML")
+    def export_html(
+        self,
+        download_dir,
+    ):
+        return self._run_export(
+            "HTML",
+            download_dir,
+        )
 
-    def export_workspace(self):
-        markdown_zip = self.export_markdown_csv()
-        html_zip = self.export_html()
+    def export_workspace(
+        self,
+        download_dir,
+    ):
+        markdown = self.export_markdown_csv(
+            download_dir
+        )
+
+        html = self.export_html(
+            download_dir
+        )
 
         return {
-            "markdown_csv": markdown_zip,
-            "html": html_zip,
+            "markdown_csv": markdown,
+            "html": html,
         }

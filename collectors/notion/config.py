@@ -1,5 +1,10 @@
 from orchestrator.config import CFG
 
+BROWSER_EXECUTABLE = CFG.get(
+    "NOTION_BROWSER_EXECUTABLE",
+    "/usr/bin/microsoft-edge",
+)
+
 PROFILE_DIR = CFG.get(
     "NOTION_PROFILE_DIR",
     "state/notion/profile"
