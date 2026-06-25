@@ -6,13 +6,13 @@ from .graph import graph_paginated_get
 
 SECURITY_ENDPOINTS = {
 
-    "riskyUsers":
+    "risky_users":
     "identityProtection/riskyUsers",
 
-    "riskDetections":
+    "risk_detections":
     "identityProtection/riskDetections",
 
-    "secureScore":
+    "secure_score":
     "security/secureScores",
 
     "alerts":
@@ -36,16 +36,19 @@ def collect_security(headers, logger):
         exist_ok=True
     )
 
+
     for name, endpoint in SECURITY_ENDPOINTS.items():
 
         logger.info(
             f"[+] Security {name}"
         )
 
+
         url = (
             f"{config.GRAPH_ROOT}/"
             f"{endpoint}"
         )
+
 
         try:
 
@@ -54,21 +57,27 @@ def collect_security(headers, logger):
                 headers
             )
 
+
         except Exception as e:
+
 
             message = (
                 f"{name} endpoint failed: {e}"
             )
 
-            logger.info(
-                f"[-] {message}"
+
+            logger.warning(
+                message
             )
+
 
             warnings.append(
                 message
             )
 
+
             continue
+
 
 
         outfile = (
@@ -76,10 +85,12 @@ def collect_security(headers, logger):
             f"{name}.json"
         )
 
+
         with open(
             outfile,
             "w"
         ) as f:
+
 
             json.dump(
                 data,
@@ -90,14 +101,8 @@ def collect_security(headers, logger):
 
         count = len(data)
 
-        key_map = {
-    "riskyUsers": "risky_users",
-    "riskDetections": "risk_detections",
-    "secureScore": "secure_score",
-    "alerts": "alerts"
-}
 
-counts[key_map[name]] = count
+        counts[name] = count
 
 
         logger.info(
@@ -105,8 +110,13 @@ counts[key_map[name]] = count
         )
 
 
+
     return {
+
         "items": counts,
+
         "warnings": warnings,
-            "errors": []
+
+        "errors": []
+
     }

@@ -50,8 +50,8 @@ def build_archive(day):
 
     subprocess.run(
         [
-            'zstd',
-            '-19',
+            "zstd",
+            "-f",
             str(tar_file)
         ],
         check=True

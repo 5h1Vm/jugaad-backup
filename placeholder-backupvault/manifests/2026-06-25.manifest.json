@@ -1,19 +1,39 @@
 {
     "date": "2026-06-25",
-    "file_count": 35,
-    "total_size": 4573843,
+    "file_count": 62,
+    "total_size": 5930720,
     "files": [
         {
+            "path": "manifest.json",
+            "size": 6403
+        },
+        {
+            "path": "backup_report.json",
+            "size": 3528
+        },
+        {
             "path": "logs/backup.log",
-            "size": 5258
+            "size": 63809
         },
         {
-            "path": "m365/security/riskDetections.json",
-            "size": 2
+            "path": "notion/manifest.json",
+            "size": 1490
         },
         {
-            "path": "m365/security/secureScore.json",
+            "path": "cloudflare/access-policies.json",
+            "size": 2762
+        },
+        {
+            "path": "cloudflare/audit_logs.json",
+            "size": 140078
+        },
+        {
+            "path": "m365/security/secure_score.json",
             "size": 2203533
+        },
+        {
+            "path": "m365/security/risk_detections.json",
+            "size": 2
         },
         {
             "path": "m365/snapshots/conditionalAccessPolicies.json",
@@ -57,55 +77,87 @@
         },
         {
             "path": "m365/audit/signins.json",
-            "size": 3245
+            "size": 3430
         },
         {
             "path": "m365/audit/provisioning.json",
             "size": 2
         },
         {
-            "path": "cloudflare/security/waf-packages.json",
+            "path": "notion/api/pages.json",
+            "size": 952018
+        },
+        {
+            "path": "notion/api/data_sources_full.json",
+            "size": 3111
+        },
+        {
+            "path": "notion/api/users.json",
+            "size": 679
+        },
+        {
+            "path": "notion/api/statistics.json",
+            "size": 206
+        },
+        {
+            "path": "notion/api/inventory.json",
+            "size": 28607
+        },
+        {
+            "path": "notion/api/data_sources.json",
+            "size": 3053
+        },
+        {
+            "path": "notion/browser/html_export.zip",
+            "size": 111598
+        },
+        {
+            "path": "notion/browser/markdown_export.zip",
+            "size": 24370
+        },
+        {
+            "path": "notion/api/rows/a072140a-df94-8364-9113-07ea21165718.json",
+            "size": 2523
+        },
+        {
+            "path": "cloudflare/security/waf_packages.json",
             "size": 189
+        },
+        {
+            "path": "cloudflare/security/rate_limits.json",
+            "size": 412
         },
         {
             "path": "cloudflare/security/filters.json",
             "size": 189
         },
         {
-            "path": "cloudflare/security/rate-limits.json",
-            "size": 412
-        },
-        {
-            "path": "cloudflare/security/firewall-rules.json",
+            "path": "cloudflare/security/firewall_rules.json",
             "size": 189
         },
         {
-            "path": "cloudflare/zerotrust/access-policies.json",
+            "path": "cloudflare/zerotrust/identity_providers.json",
+            "size": 1255
+        },
+        {
+            "path": "cloudflare/zerotrust/access_groups.json",
+            "size": 191
+        },
+        {
+            "path": "cloudflare/zerotrust/access_policies.json",
             "size": 2762
         },
         {
-            "path": "cloudflare/zerotrust/gateway-rules.json",
-            "size": 2932
-        },
-        {
-            "path": "cloudflare/zerotrust/access-users.json",
-            "size": 1985
-        },
-        {
-            "path": "cloudflare/zerotrust/device-posture.json",
+            "path": "cloudflare/zerotrust/device_posture.json",
             "size": 261
         },
         {
-            "path": "cloudflare/zerotrust/access-groups.json",
-            "size": 191
+            "path": "cloudflare/zerotrust/gateway_rules.json",
+            "size": 2932
         },
         {
-            "path": "cloudflare/zerotrust/service-tokens.json",
+            "path": "cloudflare/zerotrust/service_tokens.json",
             "size": 191
-        },
-        {
-            "path": "cloudflare/zerotrust/access-apps.json",
-            "size": 4308
         },
         {
             "path": "cloudflare/zerotrust/devices.json",
@@ -116,12 +168,44 @@
             "size": 2298
         },
         {
-            "path": "cloudflare/zerotrust/identity-providers.json",
+            "path": "cloudflare/zerotrust/access_users.json",
+            "size": 1985
+        },
+        {
+            "path": "cloudflare/zerotrust/access_applications.json",
+            "size": 4308
+        },
+        {
+            "path": "cloudflare/zone/identity_providers.json",
             "size": 1255
+        },
+        {
+            "path": "cloudflare/zone/access_groups.json",
+            "size": 191
+        },
+        {
+            "path": "cloudflare/zone/waf_packages.json",
+            "size": 189
+        },
+        {
+            "path": "cloudflare/zone/device_posture.json",
+            "size": 261
+        },
+        {
+            "path": "cloudflare/zone/rate_limits.json",
+            "size": 412
         },
         {
             "path": "cloudflare/zone/dnssec.json",
             "size": 299
+        },
+        {
+            "path": "cloudflare/zone/filters.json",
+            "size": 189
+        },
+        {
+            "path": "cloudflare/zone/zone_settings.json",
+            "size": 7007
         },
         {
             "path": "cloudflare/zone/rulesets.json",
@@ -132,15 +216,39 @@
             "size": 1908
         },
         {
-            "path": "cloudflare/zone/zone-settings.json",
-            "size": 7007
+            "path": "cloudflare/zone/gateway_rules.json",
+            "size": 2932
         },
         {
-            "path": "cloudflare/zone/dns-records.json",
+            "path": "cloudflare/zone/firewall_rules.json",
+            "size": 189
+        },
+        {
+            "path": "cloudflare/zone/service_tokens.json",
+            "size": 191
+        },
+        {
+            "path": "cloudflare/zone/devices.json",
+            "size": 3315
+        },
+        {
+            "path": "cloudflare/zone/tunnels.json",
+            "size": 2298
+        },
+        {
+            "path": "cloudflare/zone/access_users.json",
+            "size": 1985
+        },
+        {
+            "path": "cloudflare/zone/dns_records.json",
             "size": 7617
         },
         {
-            "path": "cloudflare/audit/audit-logs.json",
+            "path": "cloudflare/zone/access_applications.json",
+            "size": 4308
+        },
+        {
+            "path": "cloudflare/audit/audit_logs.json",
             "size": 140078
         }
     ]

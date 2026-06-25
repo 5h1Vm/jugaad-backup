@@ -15,8 +15,15 @@ def collect(workspace, logger):
 
     workspace.mkdir(
         parents=True,
-        exist_ok=True,
+        exist_ok=True
     )
+
+    stats = {
+        "status": "success",
+        "items": {},
+        "warnings": [],
+        "errors": []
+    }
 
 
     browser_exports = workspace / "browser"
@@ -34,160 +41,157 @@ def collect(workspace, logger):
     )
 
 
-    logger.info(
-        "Browser Exports"
-    )
+    try:
 
+        logger.info(
+            "Browser Exports"
+        )
 
-    browser = NotionBrowser(
-        logger
-    )
 
+        browser = NotionBrowser(
+            logger
+        )
 
-    browser.export_workspace(
-        browser_exports
-    )
 
+        browser_count = browser.export_workspace(
+            browser_exports
+        )
 
-    logger.success(
-        "Browser export complete"
-    )
 
+        stats["items"]["browser_exports"] = (
+            browser_count or 1
+        )
 
 
-    logger.info(
-        "Building Inventory"
-    )
+        logger.success(
+            "Browser export complete"
+        )
 
 
-    build_inventory(
-        browser_exports,
-        api_dir
-    )
+        logger.info(
+            "Building Inventory"
+        )
 
 
-    logger.success(
-        "Inventory complete"
-    )
+        build_inventory(
+            browser_exports,
+            api_dir
+        )
 
 
+        logger.success(
+            "Inventory complete"
+        )
 
-    logger.info(
-        "Collecting Pages"
-    )
 
+        logger.info(
+            "Collecting Metadata"
+        )
 
-    meta = NotionMetadataCollector(
-        api_dir
-    )
 
+        meta = NotionMetadataCollector(
+            api_dir
+        )
 
-    meta.collect_pages()
 
+        metadata = meta.collect_all()
 
-    logger.success(
-        "Pages collected"
-    )
 
+        stats["items"].update(
+            metadata
+        )
 
 
-    logger.info(
-        "Collecting Users"
-    )
+        logger.success(
+            "Metadata collected"
+        )
 
 
-    meta.collect_users()
+        logger.info(
+            "Exporting Data Sources"
+        )
 
 
-    logger.success(
-        "Users collected"
-    )
+        exported = DataSourceExporter(
+            api_dir
+        ).export()
 
 
+        stats["items"]["database_exports"] = (
+            exported or 0
+        )
 
-    logger.info(
-        "Collecting Data Sources"
-    )
 
+        logger.success(
+            "Data source export complete"
+        )
 
-    meta.collect_data_sources()
 
+        logger.info(
+            "Exporting Rows"
+        )
 
-    logger.success(
-        "Data sources collected"
-    )
 
+        rows = DataSourceRowsExporter(
+            api_dir / "rows"
+        ).export()
 
 
-    logger.info(
-        "Exporting Data Sources"
-    )
+        stats["items"]["database_rows"] = (
+            rows or 0
+        )
 
 
-    DataSourceExporter(
-        api_dir
-    ).export()
+        logger.success(
+            "Rows export complete"
+        )
 
 
-    logger.success(
-        "Data source export complete"
-    )
+        logger.info(
+            "Collecting Statistics"
+        )
 
 
+        StatisticsCollector(
+            api_dir
+        ).collect()
 
-    logger.info(
-        "Exporting Rows"
-    )
 
+        logger.success(
+            "Statistics collected"
+        )
 
-    rows_dir = api_dir / "rows"
 
+        logger.info(
+            "Building Manifest"
+        )
 
-    DataSourceRowsExporter(
-        rows_dir
-    ).export()
 
+        ManifestBuilder(
+            workspace
+        ).build()
 
-    logger.success(
-        "Rows export complete"
-    )
 
+        logger.success(
+            "Manifest created"
+        )
 
 
-    logger.info(
-        "Collecting Statistics"
-    )
+    except Exception as e:
 
+        stats["status"] = "failed"
 
-    StatisticsCollector(
-        api_dir
-    ).collect()
+        stats["errors"].append(
+            str(e)
+        )
 
-
-    logger.success(
-        "Statistics collected"
-    )
-
-
-
-    logger.info(
-        "Building Manifest"
-    )
-
-
-    ManifestBuilder(
-        workspace
-    ).build()
-
-
-    logger.success(
-        "Manifest created"
-    )
+        logger.error(
+            f"Notion failed: {e}"
+        )
 
 
     logger.success(
         "Notion collection complete"
     )
 
-
-    return workspace
+    return stats

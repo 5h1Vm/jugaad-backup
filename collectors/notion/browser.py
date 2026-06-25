@@ -16,41 +16,65 @@ STEP_WAIT_MS = 1500
 
 class NotionBrowser:
 
+
     def __init__(self, logger):
 
         self.logger = logger
 
 
-    def _wait(self, page, ms=STEP_WAIT_MS):
+
+    def _wait(
+        self,
+        page,
+        ms=STEP_WAIT_MS
+    ):
 
         page.wait_for_timeout(ms)
+
 
 
     def _launch(self):
 
         playwright = sync_playwright().start()
 
+
         context = playwright.chromium.launch_persistent_context(
+
             user_data_dir=PROFILE_DIR,
+
             headless=False,
+
             accept_downloads=True,
+
             executable_path=BROWSER_EXECUTABLE,
+
             args=[
                 "--no-sandbox",
                 "--disable-dev-shm-usage",
             ],
+
         )
 
-        page = (
-            context.pages[0]
-            if context.pages
-            else context.new_page()
-        )
+
+        if context.pages:
+
+            page = context.pages[0]
+
+        else:
+
+            page = context.new_page()
+
+        page.set_default_timeout(60000)
+
+        page.set_default_navigation_timeout(60000)
 
         return playwright, context, page
 
 
-    def _open_export_dialog(self, page):
+    def _open_export_dialog(
+        self,
+        page
+    ):
 
         self.logger.info(
             "Opening workspace"
@@ -59,43 +83,139 @@ class NotionBrowser:
         page.goto(
             WORKSPACE_URL,
             wait_until="domcontentloaded",
+            timeout=60000,
         )
 
-        self._wait(
-            page,
-            3000
+        # Then explicitly wait for the UI element you actually need
+        page.locator('[aria-label="Actions"]').wait_for(
+            state="visible",
+            timeout=60000,
         )
 
+        page.wait_for_load_state("load")   # add this line
+
+        actions = page.get_by_label("Actions")
+
+        actions.wait_for(
+            state="visible",
+            timeout=60000
+        )
 
         self.logger.info(
             "Opening actions menu"
         )
 
-        page.locator(
-            '[aria-label="Actions"]'
-        ).click(
-            timeout=30000
+        actions.scroll_into_view_if_needed()
+
+        actions.click(
+            force=True
         )
 
+        page.wait_for_timeout(1500)
 
-        self._wait(page)
+        export_item = page.get_by_role(
+            "menuitem",
+            name="Export"
+        )
 
+        if export_item.count() == 0:
+            export_item = page.locator("text=Export").last
+
+        try:
+            export_item.wait_for(
+                state="visible",
+                timeout=30000
+            )
+        except Exception:
+
+            page.screenshot(
+                path="notion_failure.png",
+                full_page=True
+            )
+
+            self.logger.error(
+                "Saved screenshot: notion_failure.png"
+            )
+
+            raise
 
         self.logger.info(
             "Opening export dialog"
         )
 
+        export_item.click()
 
-        page.get_by_text(
-            "Export",
-            exact=True,
-        ).click()
+        dialog = page.locator(
+            '[role="dialog"]'
+        ).last
 
-
-        page.wait_for_selector(
-            '[role="dialog"][aria-label="Export"]',
-            timeout=30000,
+        dialog.wait_for(
+            state="visible",
+            timeout=30000
         )
+
+        self._wait(
+            page,
+            1500
+        )
+
+    def _select_export_format(
+        self,
+        page,
+        export_format
+    ):
+
+
+        dialog = page.locator(
+            '[role="dialog"]'
+        ).last
+
+
+
+        self.logger.info(
+            f"Selecting format: {export_format}"
+        )
+
+
+
+        selector = dialog.locator(
+            '[role="button"]'
+        ).filter(
+            has_text="HTML"
+        )
+
+
+
+        if selector.count() == 0:
+
+            selector = dialog.locator(
+                '[role="button"]'
+            ).filter(
+                has_text="Markdown"
+            )
+
+
+
+        if selector.count() == 0:
+
+            selector = dialog.locator(
+                '[role="button"]'
+            ).filter(
+                has_text="PDF"
+            )
+
+
+
+        if selector.count() == 0:
+
+            raise RuntimeError(
+                "Export format selector missing"
+            )
+
+
+
+        selector.first.click()
+
 
 
         self._wait(
@@ -104,66 +224,38 @@ class NotionBrowser:
         )
 
 
-    def _select_export_format(
-        self,
-        page,
-        export_format,
-    ):
 
-        dialog = page.locator(
-            '[role="dialog"][aria-label="Export"]'
+        option = page.get_by_role(
+            "menuitem",
+            name=export_format
         )
 
 
-        self.logger.info(
-            f"Selecting format: {export_format}"
-        )
 
+        if option.count() == 0:
 
-        current = dialog.get_by_role(
-            "button",
-            name="HTML"
-        )
-
-
-        if current.count() == 0:
-
-            current = dialog.get_by_role(
-                "button",
-                name="Markdown & CSV"
+            option = page.locator(
+                '[role="option"]'
+            ).filter(
+                has_text=export_format
             )
 
 
-        if current.count() == 0:
 
-            current = dialog.get_by_role(
-                "button",
-                name="PDF"
-            )
-
-
-        if current.count() == 0:
+        if option.count() == 0:
 
             raise RuntimeError(
-                "Export format selector not found"
+                f"Format option not found: {export_format}"
             )
 
 
-        current.first.click()
+
+        option.first.click()
 
 
-        page.wait_for_timeout(
-            1500
-        )
 
-
-        page.get_by_text(
-            export_format,
-            exact=True,
-        ).click()
-
-
-        page.wait_for_timeout(
+        self._wait(
+            page,
             2000
         )
 
@@ -173,158 +265,178 @@ class NotionBrowser:
         )
 
 
+    def _select_default_view(
+        self,
+        page
+    ):
 
-    def _select_default_view(self, page):
 
         dialog = page.locator(
-            '[role="dialog"][aria-label="Export"]'
-        )
+            '[role="dialog"]'
+        ).last
+
 
 
         try:
 
-            default_button = dialog.get_by_role(
-                "button",
-                name="Default view",
+
+            current = dialog.locator(
+                '[role="button"]'
+            ).filter(
+                has_text="Current view"
             )
 
-
-            if default_button.count():
-
-                self.logger.info(
-                    "Default view already selected"
-                )
-
-                return
-
-
-            self.logger.info(
-                "Selecting default database view"
-            )
-
-
-            current = dialog.get_by_role(
-                "button",
-                name="Current view"
-            )
 
 
             if current.count() == 0:
 
-                current = (
-                    dialog.locator('[role="button"]')
-                    .filter(
-                        has_text="Current view"
-                    )
-                    .first
-                )
+                return
 
 
-            current.click()
 
-
-            self._wait(
-                page,
-                1500
+            self.logger.info(
+                "Selecting default view"
             )
 
+            current.first.click()
 
-            default_view = dialog.get_by_role(
+            default = page.get_by_role(
                 "menuitem",
                 name="Default view"
             )
 
+            if default.count():
 
-            if default_view.count() == 0:
+                default.first.click()
 
-                default_view = page.get_by_role(
-                    "menuitem",
-                    name="Default view"
+                self.logger.success(
+                    "Default view selected"
                 )
-
-
-            if default_view.count() == 0:
-
-                self.logger.warning(
-                    "Default view not found"
-                )
-
-                return
-
-
-            default_view.click()
-
-
-            self.logger.success(
-                "Default view selected"
-            )
-
 
         except Exception as e:
 
+
             self.logger.warning(
-                f"Default view selection failed: {e}"
+                f"Default view skipped: {e}"
             )
-
-
-
-    def _enable_subpages(self,page):
+   
+    def _enable_subpages(
+        self,
+        page
+    ):
 
         self.logger.info(
-            "Checking Include Subpages"
+            "Enabling export switches"
         )
 
 
         switches = page.locator(
-            'input[role="switch"]'
+            'input[type="checkbox"][role="switch"]'
         )
 
 
         count = switches.count()
 
 
-        if count < 1:
+        self.logger.info(
+            f"Found {count} switches"
+        )
 
-            raise RuntimeError(
-                "No export switches found"
+
+        if count == 0:
+
+            self.logger.warning(
+                "No switches found"
+            )
+
+            return
+
+
+
+        # run twice because second switch becomes enabled
+        # only after first switch is turned on
+
+        for round_no in range(2):
+
+            self.logger.info(
+                f"Switch pass {round_no + 1}"
             )
 
 
-        switch = switches.nth(0)
+            count = switches.count()
 
 
-        if not switch.is_checked():
+            for i in range(count):
 
-            switch.click(
-                force=True
-            )
+                switch = switches.nth(i)
 
 
-        if switch.is_checked():
+                try:
 
-            self.logger.success(
-                "Include Subpages enabled"
-            )
+                    if switch.is_disabled():
 
-        else:
+                        self.logger.info(
+                            f"Switch {i+1} disabled"
+                        )
 
-            raise RuntimeError(
-                "Failed enabling Include Subpages"
-            )
+                        continue
 
 
 
+                    checked = switch.is_checked()
+
+
+                    if not checked:
+
+
+                        self.logger.info(
+                            f"Turning ON switch {i+1}"
+                        )
+
+
+                        switch.click(
+                            force=True
+                        )
+
+
+                        self._wait(
+                            page,
+                            1000
+                        )
+
+
+
+                        if switch.is_checked():
+
+                            self.logger.success(
+                                f"Switch {i+1} enabled"
+                            )
+
+
+
+                except Exception as e:
+
+
+                    self.logger.warning(
+                        f"Switch {i+1} error: {e}"
+                    )
+
+
+
+        self.logger.success(
+            "All available switches processed"
+        )
+    
     def _configure_export(
         self,
         page,
-        export_format,
+        export_format
     ):
 
 
         self.logger.info(
             f"Configuring {export_format}"
         )
-
 
         self._select_export_format(
             page,
@@ -341,38 +453,43 @@ class NotionBrowser:
             page
         )
 
-
         self._wait(
             page,
             2000
         )
 
-
         self.logger.success(
             "Export configuration complete"
         )
 
-
-
     def _download_export(
         self,
         page,
-        download_dir: Path,
-        export_format,
+        download_dir,
+        export_format
     ):
 
 
         dialog = page.locator(
-            '[role="dialog"][aria-label="Export"]'
+            '[role="dialog"]'
+        ).last
+
+
+
+        button = dialog.locator(
+            '[role="button"]'
+        ).filter(
+            has_text="Export"
         )
 
 
-        button = (
-            dialog.locator('[role="button"]')
-            .filter(
-                has_text="Export"
+
+        if button.count() == 0:
+
+            raise RuntimeError(
+                "Export button not found"
             )
-        )
+
 
 
         self.logger.info(
@@ -380,31 +497,51 @@ class NotionBrowser:
         )
 
 
+
         with page.expect_download(
+
             timeout=EXPORT_TIMEOUT_MS
-        ) as dl:
 
-            button.last.click()
-
-
-        download = dl.value
+        ) as download_info:
 
 
-        download_dir = Path(download_dir)
+            button.first.wait_for(
+                state="visible",
+                timeout=60000
+            )
+
+            button.first.click()
+
+
+        download = download_info.value
+
+
+
+        download_dir = Path(
+            download_dir
+        )
+
+
 
         download_dir.mkdir(
+
             parents=True,
+
             exist_ok=True
+
         )
+
 
 
         if export_format == "Markdown & CSV":
 
             filename = "markdown_export.zip"
 
+
         elif export_format == "HTML":
 
             filename = "html_export.zip"
+
 
         else:
 
@@ -415,9 +552,11 @@ class NotionBrowser:
         target = download_dir / filename
 
 
+
         download.save_as(
             str(target)
         )
+
 
 
         self.logger.success(
@@ -427,34 +566,34 @@ class NotionBrowser:
 
         return target
 
-
-
     def _run_export(
         self,
         export_format,
-        download_dir,
+        download_dir
     ):
 
-
         playwright = None
-        context = None
 
+        context = None
 
         try:
 
             playwright, context, page = self._launch()
 
+            if page.is_closed():
+
+                raise RuntimeError(
+                    "Browser page closed immediately after launch."
+                )
 
             self._open_export_dialog(
                 page
             )
 
-
             self._configure_export(
                 page,
                 export_format
             )
-
 
             return self._download_export(
                 page,
@@ -462,64 +601,64 @@ class NotionBrowser:
                 export_format
             )
 
-
         finally:
-
 
             if context:
 
                 context.close()
 
-
             if playwright:
 
                 playwright.stop()
 
-
-
     def export_markdown_csv(
         self,
-        download_dir,
+        download_dir
     ):
 
+        return self._run_export(
+
+            "Markdown & CSV",
+
+            download_dir
+
+        )
+
+    def export_html(
+        self,
+        download_dir
+    ):
 
         return self._run_export(
+
+            "HTML",
+
+            download_dir
+
+        )
+
+
+    def export_workspace(
+        self,
+        download_dir
+    ):
+
+        markdown = self._run_export(
             "Markdown & CSV",
             download_dir
         )
 
 
-
-    def export_html(
-        self,
-        download_dir,
-    ):
-
-
-        return self._run_export(
+        html = self._run_export(
             "HTML",
             download_dir
         )
 
 
-
-    def export_workspace(
-        self,
-        download_dir,
-    ):
-
-
-        markdown = self.export_markdown_csv(
-            download_dir
-        )
-
-
-        html = self.export_html(
-            download_dir
-        )
-
-
         return {
-            "markdown_csv": markdown,
-            "html": html,
+
+            "markdown_csv": str(markdown),
+
+            "html": str(html),
+
         }

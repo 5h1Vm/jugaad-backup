@@ -5,51 +5,159 @@ from .config import ZONE_ID, ACCOUNT_ID
 from . import config as cf_config
 from .api import get
 
+DISPLAY_NAMES = {
 
-DISPLAY = {
-
-    "zone": "Zone",
     "dns_records": "DNS Records",
-    "zone_settings": "Zone Settings",
-    "dnssec": "DNSSEC",
-    "rulesets": "Rulesets",
 
-    "firewall_rules": "Firewall Rules",
-    "filters": "Filters",
-    "rate_limits": "Rate Limits",
+    "dnssec": "DNSSEC",
+
     "waf_packages": "WAF Packages",
 
     "access_applications": "Access Applications",
-    "access_groups": "Access Groups",
-    "access_users": "Access Users",
-    "service_tokens": "Service Tokens",
-    "identity_providers": "Identity Providers",
-    "device_posture": "Device Posture",
-    "devices": "Devices",
-    "gateway_rules": "Gateway Rules",
-    "tunnels": "Tunnels",
 
-    "access_policies": "Access Policies",
-    "audit_logs": "Audit Logs"
+    "access_groups": "Access Groups",
+
+    "service_tokens": "Service Tokens",
+
+    "identity_providers": "Identity Providers",
+
+    "device_posture": "Device Posture",
+
+    "gateway_rules": "Gateway Rules",
+
 }
 
+BASE = "https://api.cloudflare.com/client/v4"
 
-def count(obj):
 
-    if isinstance(obj, list):
-        return len(obj)
 
-    if isinstance(obj, dict):
+DATASETS = {
 
-        result = obj.get("result")
 
-        if isinstance(result, list):
-            return len(result)
+    #
+    # Zone
+    #
 
-        if isinstance(result, dict):
-            return 1
+    "zone": (
+        "zone",
+        f"{BASE}/zones/{ZONE_ID}"
+    ),
 
-    return 0
+
+    "dns_records": (
+        "zone",
+        f"{BASE}/zones/{ZONE_ID}/dns_records"
+    ),
+
+
+    "zone_settings": (
+        "zone",
+        f"{BASE}/zones/{ZONE_ID}/settings"
+    ),
+
+
+    "dnssec": (
+        "zone",
+        f"{BASE}/zones/{ZONE_ID}/dnssec"
+    ),
+
+
+    "rulesets": (
+        "zone",
+        f"{BASE}/zones/{ZONE_ID}/rulesets"
+    ),
+
+
+
+    #
+    # Security
+    #
+
+    "firewall_rules": (
+        "security",
+        f"{BASE}/zones/{ZONE_ID}/firewall/rules"
+    ),
+
+
+    "filters": (
+        "security",
+        f"{BASE}/zones/{ZONE_ID}/filters"
+    ),
+
+
+    "rate_limits": (
+        "security",
+        f"{BASE}/zones/{ZONE_ID}/rate_limits"
+    ),
+
+
+    "waf_packages": (
+        "security",
+        f"{BASE}/zones/{ZONE_ID}/firewall/waf/packages"
+    ),
+
+
+
+
+    #
+    # Zero Trust
+    #
+
+    "access_applications": (
+        "zerotrust",
+        f"{BASE}/accounts/{ACCOUNT_ID}/access/apps"
+    ),
+
+
+    "access_groups": (
+        "zerotrust",
+        f"{BASE}/accounts/{ACCOUNT_ID}/access/groups"
+    ),
+
+
+    "access_users": (
+        "zerotrust",
+        f"{BASE}/accounts/{ACCOUNT_ID}/access/users"
+    ),
+
+
+    "service_tokens": (
+        "zerotrust",
+        f"{BASE}/accounts/{ACCOUNT_ID}/access/service_tokens"
+    ),
+
+
+    "identity_providers": (
+        "zerotrust",
+        f"{BASE}/accounts/{ACCOUNT_ID}/access/identity_providers"
+    ),
+
+
+    "device_posture": (
+        "zerotrust",
+        f"{BASE}/accounts/{ACCOUNT_ID}/devices/posture"
+    ),
+
+
+    "devices": (
+        "zerotrust",
+        f"{BASE}/accounts/{ACCOUNT_ID}/devices"
+    ),
+
+
+    "gateway_rules": (
+        "zerotrust",
+        f"{BASE}/accounts/{ACCOUNT_ID}/gateway/rules"
+    ),
+
+
+    "tunnels": (
+        "zerotrust",
+        f"{BASE}/accounts/{ACCOUNT_ID}/cfd_tunnel"
+    )
+
+}
+
 
 
 
@@ -59,6 +167,7 @@ def save_json(path, data):
         parents=True,
         exist_ok=True
     )
+
 
     with open(
         path,
@@ -73,18 +182,51 @@ def save_json(path, data):
 
 
 
+
+def count(data):
+
+    if isinstance(data, list):
+
+        return len(data)
+
+
+    if isinstance(data, dict):
+
+        result = data.get(
+            "result"
+        )
+
+
+        if isinstance(result, list):
+
+            return len(result)
+
+
+        if isinstance(result, dict):
+
+            return 1
+
+
+    return 0
+
+
+
+
+
 def collect(workspace, logger):
 
-    cf_config.WORKSPACE = Path(workspace)
+
+    cf_config.WORKSPACE = Path(
+        workspace
+    )
+
 
 
     stats = {
 
         "status": "success",
 
-        "items": {
-
-        },
+        "items": {},
 
         "warnings": [],
 
@@ -93,116 +235,78 @@ def collect(workspace, logger):
     }
 
 
-    zone_dir = (
-        cf_config.WORKSPACE /
-        "zone"
-    )
 
-    zone_dir.mkdir(
-        parents=True,
-        exist_ok=True
-    )
+    root = cf_config.WORKSPACE
 
 
-    endpoints = {
 
+    folders = {
 
         "zone":
-        f"https://api.cloudflare.com/client/v4/zones/{ZONE_ID}",
+            root / "zone",
 
+        "security":
+            root / "security",
 
-        "dns_records":
-        f"https://api.cloudflare.com/client/v4/zones/{ZONE_ID}/dns_records",
+        "zerotrust":
+            root / "zerotrust",
 
-
-        "zone_settings":
-        f"https://api.cloudflare.com/client/v4/zones/{ZONE_ID}/settings",
-
-
-        "dnssec":
-        f"https://api.cloudflare.com/client/v4/zones/{ZONE_ID}/dnssec",
-
-
-        "rulesets":
-        f"https://api.cloudflare.com/client/v4/zones/{ZONE_ID}/rulesets",
-
-
-        "firewall_rules":
-        f"https://api.cloudflare.com/client/v4/zones/{ZONE_ID}/firewall/rules",
-
-
-        "filters":
-        f"https://api.cloudflare.com/client/v4/zones/{ZONE_ID}/filters",
-
-
-        "rate_limits":
-        f"https://api.cloudflare.com/client/v4/zones/{ZONE_ID}/rate_limits",
-
-
-        "waf_packages":
-        f"https://api.cloudflare.com/client/v4/zones/{ZONE_ID}/firewall/waf/packages",
-
-
-        "access_applications":
-        f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/access/apps",
-
-
-        "access_groups":
-        f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/access/groups",
-
-
-        "access_users":
-        f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/access/users",
-
-
-        "service_tokens":
-        f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/access/service_tokens",
-
-
-        "identity_providers":
-        f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/access/identity_providers",
-
-
-        "device_posture":
-        f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/devices/posture",
-
-
-        "devices":
-        f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/devices",
-
-
-        "gateway_rules":
-        f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/gateway/rules",
-
-
-        "tunnels":
-        f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/cfd_tunnel"
+        "audit":
+            root / "audit"
 
     }
 
 
-    for name, url in endpoints.items():
+
+    for folder in folders.values():
+
+        folder.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+
+
+
+
+    for name, (category, url) in DATASETS.items():
+
 
         try:
 
+
             logger.info(
-                DISPLAY[name]
+                name.replace(
+                    "_",
+                    " "
+                ).title()
             )
+
 
 
             data = get(url)
 
 
+
             save_json(
-                zone_dir / f"{name}.json",
+
+                folders[category] /
+                f"{name}.json",
+
+                data
+
+            )
+
+
+
+            total = count(
                 data
             )
 
 
-            total = count(data)
-
 
             stats["items"][name] = total
+
 
 
             logger.success(
@@ -210,27 +314,31 @@ def collect(workspace, logger):
             )
 
 
+
         except Exception as e:
 
 
-            message = (
-                f"{DISPLAY[name]} failed: {e}"
+            msg = (
+                f"{name} failed: {e}"
             )
 
 
             logger.error(
-                message
+                msg
             )
 
 
             stats["warnings"].append(
-                message
+                msg
             )
 
 
 
+
+
+
     #
-    # Access policies
+    # Access Policies
     #
 
     try:
@@ -245,7 +353,9 @@ def collect(workspace, logger):
 
 
         apps = get(
-            f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/access/apps"
+
+            f"{BASE}/accounts/{ACCOUNT_ID}/access/apps"
+
         )
 
 
@@ -258,33 +368,53 @@ def collect(workspace, logger):
             app_id = app["id"]
 
 
-            data = get(
-                f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/access/apps/{app_id}/policies"
+            result = get(
+
+                f"{BASE}/accounts/{ACCOUNT_ID}/"
+                f"access/apps/{app_id}/policies"
+
             )
 
 
-            policies.append(
-                {
-                    "application": app.get("name"),
-                    "application_id": app_id,
-                    "policies": data.get(
+            policies.append({
+
+                "application":
+                    app.get("name"),
+
+
+                "application_id":
+                    app_id,
+
+
+                "policies":
+                    result.get(
                         "result",
                         []
                     )
-                }
-            )
+
+            })
+
 
 
         save_json(
-            cf_config.WORKSPACE /
-            "access-policies.json",
+
+            folders["zerotrust"] /
+            "access_policies.json",
+
             policies
+
         )
 
 
         stats["items"]["access_policies"] = len(
             policies
         )
+
+
+        logger.success(
+            f"Collected {len(policies)}"
+        )
+
 
 
     except Exception as e:
@@ -296,8 +426,11 @@ def collect(workspace, logger):
 
 
 
+
+
+
     #
-    # Audit logs
+    # Audit Logs
     #
 
     try:
@@ -309,19 +442,33 @@ def collect(workspace, logger):
 
 
         data = get(
-            f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/audit_logs"
+
+            f"{BASE}/accounts/{ACCOUNT_ID}/audit_logs"
+
         )
 
 
         save_json(
-            cf_config.WORKSPACE /
+
+            folders["audit"] /
             "audit_logs.json",
+
+            data
+
+        )
+
+
+        total = count(
             data
         )
 
 
-        stats["items"]["audit_logs"] = count(
-            data
+        stats["items"]["audit_logs"] = total
+
+
+
+        logger.success(
+            f"Collected {total}"
         )
 
 
@@ -331,6 +478,7 @@ def collect(workspace, logger):
         stats["warnings"].append(
             f"Audit Logs failed: {e}"
         )
+
 
 
 

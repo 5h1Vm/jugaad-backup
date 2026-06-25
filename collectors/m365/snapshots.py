@@ -4,7 +4,7 @@ from . import config
 from .graph import graph_paginated_get
 
 
-SNAPSHOT_KEYS = {
+SNAPSHOTS = {
 
     "users":
     "users",
@@ -16,10 +16,10 @@ SNAPSHOT_KEYS = {
     "applications",
 
     "servicePrincipals":
-    "service_principals",
+    "servicePrincipals",
 
     "roles":
-    "roles",
+    "directoryRoles",
 
     "domains":
     "domains",
@@ -28,10 +28,10 @@ SNAPSHOT_KEYS = {
     "organization",
 
     "conditionalAccessPolicies":
-    "conditional_access_policies",
+    "identity/conditionalAccess/policies",
 
     "namedLocations":
-    "named_locations"
+    "identity/conditionalAccess/namedLocations"
 }
 
 def collect_snapshots(headers, logger):
@@ -48,26 +48,31 @@ def collect_snapshots(headers, logger):
         exist_ok=True
     )
 
+
     for name, endpoint in SNAPSHOTS.items():
 
         logger.info(
             f"[+] Snapshot {name}"
         )
 
+
         url = (
             f"{config.GRAPH_ROOT}/"
             f"{endpoint}"
         )
+
 
         data = graph_paginated_get(
             url,
             headers
         )
 
+
         outfile = (
             snapshot_dir /
             f"{name}.json"
         )
+
 
         with open(
             outfile,
@@ -80,14 +85,16 @@ def collect_snapshots(headers, logger):
                 indent=2
             )
 
-        count = len(data)
 
-        counts[
-            SNAPSHOT_KEYS[name]
-        ] = count
+        total = len(data)
+
+
+        counts[name] = total
+
 
         logger.info(
-            f"Collected {count}"
+            f"Collected {total}"
         )
+
 
     return counts
