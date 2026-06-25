@@ -10,11 +10,6 @@ PROFILE_NAME = CFG.get(
     "Default"
 )
 
-DOWNLOAD_DIR = CFG.get(
-    "NOTION_DOWNLOAD_DIR",
-    "/home/hc/Downloads"
-)
-
 WORKSPACE_URL = CFG.get(
     "NOTION_WORKSPACE_URL",
     ""
