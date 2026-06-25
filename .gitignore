@@ -11,6 +11,8 @@ playwright-artifacts-*
 *.zip
 *.gz
 *.tar.gz
+*age
+*.tar.zst.age
 
 # Workspace Outputs / Runtime State
 workspace/
