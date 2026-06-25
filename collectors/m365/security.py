@@ -20,7 +20,7 @@ SECURITY_ENDPOINTS = {
 }
 
 
-def collect_security(headers):
+def collect_security(headers, logger):
 
     security_dir = (
     config.WORKSPACE /
@@ -33,7 +33,7 @@ def collect_security(headers):
 
     for name, endpoint in SECURITY_ENDPOINTS.items():
 
-        print(
+        logger.info(
             f"[+] Security {name}"
         )
 
@@ -51,7 +51,7 @@ def collect_security(headers):
 
         except Exception as e:
 
-            print(
+            logger.info(
                 f"[-] {name}: {e}"
             )
 
@@ -73,6 +73,6 @@ def collect_security(headers):
                 indent=2
             )
 
-        print(
+        logger.info(
             f"Collected {len(data)}"
         )

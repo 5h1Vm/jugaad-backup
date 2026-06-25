@@ -7,24 +7,41 @@ from .snapshots import collect_snapshots
 from .security import collect_security
 
 
-def collect(workspace):
+def collect(workspace, logger):
 
     config.WORKSPACE = Path(workspace)
 
     token = get_token()
 
     headers = {
-        'Authorization': f'Bearer {token}'
+        "Authorization": f"Bearer {token}"
     }
 
-    print('[+] Token acquired')
+    logger.success(
+        "Token acquired"
+    )
 
-    collect_audit(headers)
-    collect_snapshots(headers)
-    collect_security(headers)
+    collect_audit(
+        headers,
+        logger
+    )
 
-    print('[+] M365 collection complete')
+    collect_snapshots(
+        headers,
+        logger
+    )
+
+    collect_security(
+        headers,
+        logger
+    )
+
+    logger.success(
+        "M365 collection complete"
+    )
 
 
-if __name__ == '__main__':
-    raise SystemExit('Use orchestrator.run to execute collectors')
+if __name__ == "__main__":
+    raise SystemExit(
+        "Use orchestrator.run to execute collectors"
+    )

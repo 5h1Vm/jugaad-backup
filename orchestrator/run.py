@@ -1,7 +1,5 @@
 from datetime import date
-
 from pathlib import Path
-
 import shutil
 
 from .config import (
@@ -15,35 +13,36 @@ from .manifest import build_manifest
 from .archive import build_archive
 from .verify import verify_archive
 
+from lib.logger import Logger
 
-def run_notion(workspace):
+
+def run_notion(workspace, logger):
 
     from collectors.notion.collector import collect
 
     collect(
-        str(workspace)
+        str(workspace),
+        logger
     )
 
 
-def run_cloudflare(workspace):
+def run_cloudflare(workspace, logger):
 
     from collectors.cloudflare.collector import collect
 
-    print(
-        "[+] Running Cloudflare collector"
-    )
-
     collect(
-        str(workspace)
+        str(workspace),
+        logger
     )
 
 
-def run_m365(workspace):
+def run_m365(workspace, logger):
 
     from collectors.m365.collector import collect
 
     collect(
-        str(workspace)
+        str(workspace),
+        logger
     )
 
 
@@ -63,9 +62,14 @@ def main():
         exist_ok=True
     )
 
-    print(
-        f"[+] Workspace: {day_dir}"
+    logger = Logger(
+        day_dir / "logs"
     )
+
+    logger.info(
+        f"Workspace: {day_dir}"
+    )
+
 
     if (
         CFG.get(
@@ -75,61 +79,128 @@ def main():
         == "true"
     ):
 
-        print(
-            "[+] Running M365 collector"
+        logger.section(
+            "Microsoft 365"
+        )
+
+        logger.info(
+            "Starting collector"
         )
 
         run_m365(
-            day_dir / "m365"
+            day_dir / "m365",
+            logger
         )
 
-    if CFG.get("ENABLE_CLOUDFLARE", "false").lower() == "true":
+        logger.end_section()
+
+
+
+    if (
+        CFG.get(
+            "ENABLE_CLOUDFLARE",
+            "false"
+        ).lower()
+        == "true"
+    ):
+
+        logger.section(
+            "Cloudflare"
+        )
+
+        logger.info(
+            "Starting collector"
+        )
 
         run_cloudflare(
-            day_dir / "cloudflare"
+            day_dir / "cloudflare",
+            logger
         )
 
-    if CFG.get("ENABLE_NOTION", "false").lower() == "true":
+        logger.end_section()
+
+
+
+    if (
+        CFG.get(
+            "ENABLE_NOTION",
+            "false"
+        ).lower()
+        == "true"
+    ):
+
+        logger.section(
+            "Notion"
+        )
+
+        logger.info(
+            "Starting collector"
+        )
 
         try:
 
-            print(
-                "[+] Running Notion collector"
-            )
-
             run_notion(
-                day_dir / "notion"
+                day_dir / "notion",
+                logger
             )
 
         except Exception as e:
 
-            print(
-                f"[-] Notion failed: {e}"
+            logger.error(
+                f"Notion failed: {e}"
             )
 
-    print(
-        "[+] Building manifest"
+        logger.end_section()
+
+
+
+    logger.section(
+        "Manifest"
+    )
+
+    logger.info(
+        "Building"
     )
 
     manifest = build_manifest(
         day_dir
     )
 
-    print(
-        "[+] Building archive"
+    logger.end_section()
+
+
+
+    logger.section(
+        "Archive"
+    )
+
+    logger.info(
+        "Building"
     )
 
     archive = build_archive(
         today
     )
 
-    print(
-        "[+] Verifying archive"
+    logger.end_section()
+
+
+
+    logger.section(
+        "Verification"
+    )
+
+    logger.info(
+        "Verifying archive"
     )
 
     verify_archive(
         today
     )
+
+    logger.end_section()
+
+
 
     manifest_target = (
         BACKUP_TARGET /
@@ -137,39 +208,53 @@ def main():
         f"{today}.manifest.json"
     )
 
+
     manifest_target.parent.mkdir(
         parents=True,
         exist_ok=True
     )
+
 
     shutil.copy2(
         manifest,
         manifest_target
     )
 
-    print(
-        "[+] Backup complete"
+
+    logger.info(
+        "Backup complete"
     )
 
-    print(
-        f"[+] Archive: {archive}"
+    logger.info(
+        f"Archive: {archive}"
     )
 
-    print(
-        f"[+] Manifest: {manifest_target}"
+    logger.info(
+        f"Manifest: {manifest_target}"
     )
 
-    print(
-        "[+] Cleanup"
+
+
+    logger.section(
+        "Cleanup"
     )
+
 
     deleted = cleanup_workspace()
 
+
     for item in deleted:
 
-        print(
-            f"[+] Removed {item}"
+        logger.info(
+            f"Removed {item}"
         )
+
+
+    logger.end_section()
+
+
+    logger.finish()
+
 
 
 if __name__ == "__main__":

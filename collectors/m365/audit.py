@@ -27,7 +27,7 @@ AUDIT_ENDPOINTS = {
 }
 
 
-def collect_audit(headers):
+def collect_audit(headers, logger):
 
     state = load_state()
 
@@ -44,7 +44,7 @@ def collect_audit(headers):
 
     for dataset, cfg in AUDIT_ENDPOINTS.items():
 
-        print(
+        logger.info(
             f"[+] Audit {dataset}"
         )
 
@@ -87,7 +87,7 @@ def collect_audit(headers):
                 indent=2
             )
 
-        print(
+        logger.info(
             f"Collected {len(data)}"
         )
 

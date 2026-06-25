@@ -1,8 +1,12 @@
 {
     "date": "2026-06-25",
-    "file_count": 44,
-    "total_size": 5697710,
+    "file_count": 45,
+    "total_size": 5701737,
     "files": [
+        {
+            "path": "logs/backup.log",
+            "size": 5540
+        },
         {
             "path": "notion/manifest.json",
             "size": 1490
@@ -53,11 +57,11 @@
         },
         {
             "path": "m365/audit/directoryAudits.json",
-            "size": 1486
+            "size": 2
         },
         {
             "path": "m365/audit/signins.json",
-            "size": 3232
+            "size": 3217
         },
         {
             "path": "m365/audit/provisioning.json",
@@ -89,7 +93,7 @@
         },
         {
             "path": "notion/browser/html_export.zip",
-            "size": 111611
+            "size": 111598
         },
         {
             "path": "notion/browser/markdown_export.zip",
@@ -149,7 +153,7 @@
         },
         {
             "path": "cloudflare/zerotrust/tunnels.json",
-            "size": 2299
+            "size": 2298
         },
         {
             "path": "cloudflare/zerotrust/identity-providers.json",

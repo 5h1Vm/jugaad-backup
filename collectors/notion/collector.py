@@ -1,4 +1,5 @@
 from pathlib import Path
+
 from .browser import NotionBrowser
 from .api_inventory import build_inventory
 from .api import NotionMetadataCollector
@@ -8,8 +9,10 @@ from .statistics import StatisticsCollector
 from .manifest import ManifestBuilder
 
 
-def collect(workspace):
+def collect(workspace, logger):
+
     workspace = Path(workspace)
+
     workspace.mkdir(
         parents=True,
         exist_ok=True,
@@ -18,36 +21,97 @@ def collect(workspace):
     browser_exports = workspace / "browser"
     api_dir = workspace / "api"
 
-    browser_exports.mkdir(parents=True, exist_ok=True)
-    api_dir.mkdir(parents=True, exist_ok=True)
+    browser_exports.mkdir(
+        parents=True,
+        exist_ok=True
+    )
 
-    print()
-    print("=" * 60)
-    print("Notion Collector")
-    print("=" * 60)
+    api_dir.mkdir(
+        parents=True,
+        exist_ok=True
+    )
+
+
+    logger.info(
+        "Browser Exports"
+    )
 
     browser = NotionBrowser()
-
-    print("[+] Browser exports")
 
     browser.export_workspace(
         browser_exports
     )
 
-    print("[+] Building inventory")
+    logger.success(
+        "Browser export complete"
+    )
+
+
+    logger.info(
+        "Building Inventory"
+    )
 
     build_inventory(
         browser_exports,
         api_dir
     )
 
+    logger.success(
+        "Inventory complete"
+    )
+
+
+    logger.info(
+        "Collecting Pages"
+    )
+
     meta = NotionMetadataCollector(api_dir)
 
     meta.collect_pages()
+
+    logger.success(
+        "Pages collected"
+    )
+
+
+    logger.info(
+        "Collecting Users"
+    )
+
     meta.collect_users()
+
+    logger.success(
+        "Users collected"
+    )
+
+
+    logger.info(
+        "Collecting Data Sources"
+    )
+
     meta.collect_data_sources()
 
-    DataSourceExporter(api_dir).export()
+    logger.success(
+        "Data sources collected"
+    )
+
+
+    logger.info(
+        "Exporting Data Sources"
+    )
+
+    DataSourceExporter(
+        api_dir
+    ).export()
+
+    logger.success(
+        "Data source export complete"
+    )
+
+
+    logger.info(
+        "Exporting Rows"
+    )
 
     rows_dir = api_dir / "rows"
 
@@ -55,12 +119,35 @@ def collect(workspace):
         rows_dir
     ).export()
 
+    logger.success(
+        "Rows export complete"
+    )
+
+
+    logger.info(
+        "Collecting Statistics"
+    )
+
     StatisticsCollector(
         api_dir
     ).collect()
 
+    logger.success(
+        "Statistics collected"
+    )
+
+
+    logger.info(
+        "Building Manifest"
+    )
+
     ManifestBuilder(
         workspace
     ).build()
+
+    logger.success(
+        "Manifest created"
+    )
+
 
     return workspace

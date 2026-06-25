@@ -36,7 +36,7 @@ SNAPSHOTS = {
 }
 
 
-def collect_snapshots(headers):
+def collect_snapshots(headers, logger):
 
     snapshot_dir = (
     config.WORKSPACE /
@@ -50,7 +50,7 @@ def collect_snapshots(headers):
 
     for name, endpoint in SNAPSHOTS.items():
 
-        print(
+        logger.info(
             f"[+] Snapshot {name}"
         )
 
@@ -80,6 +80,6 @@ def collect_snapshots(headers):
                 indent=2
             )
 
-        print(
+        logger.info(
             f"Collected {len(data)}"
         )
