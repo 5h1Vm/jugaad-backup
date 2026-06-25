@@ -2,18 +2,22 @@ import hashlib
 
 from pathlib import Path
 
-from .config import BACKUP_TARGET
+from .config import WORKSPACE
 
 
-def sha256_file(path):
+def sha256_file(path: Path) -> str:
 
     h = hashlib.sha256()
 
-    with open(path, 'rb') as f:
+    with open(path, "rb") as f:
+
         while True:
-            chunk = f.read(8192)
+
+            chunk = f.read(1024 * 1024)
+
             if not chunk:
                 break
+
             h.update(chunk)
 
     return h.hexdigest()
@@ -21,20 +25,34 @@ def sha256_file(path):
 
 def verify_archive(day):
 
-    archive = BACKUP_TARGET / 'archives' / f'{day}.tar.zst.age'
+    archive = (
+        WORKSPACE
+        / "archive"
+        / f"{day}.tar.zst.age"
+    )
 
-    hash_file = BACKUP_TARGET / 'hashes' / f'{day}.sha256'
+    hash_file = (
+        WORKSPACE
+        / "archive"
+        / f"{day}.sha256"
+    )
 
     if not archive.exists():
-        raise Exception(f'Missing archive: {archive}')
+
+        raise FileNotFoundError(archive)
 
     if not hash_file.exists():
-        raise Exception(f'Missing hash: {hash_file}')
+
+        raise FileNotFoundError(hash_file)
 
     expected = hash_file.read_text().strip()
+
     actual = sha256_file(archive)
 
-    if actual != expected:
-        raise Exception('Hash mismatch')
+    if expected != actual:
+
+        raise RuntimeError(
+            "Archive checksum mismatch."
+        )
 
     return True

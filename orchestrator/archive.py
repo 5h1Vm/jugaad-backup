@@ -4,21 +4,24 @@ import subprocess
 from pathlib import Path
 
 from .config import (
-    BACKUP_TARGET,
     WORKSPACE,
-    ARCHIVE_PUBLIC_KEY
+    ARCHIVE_PUBLIC_KEY,
 )
 
 
-def sha256_file(path):
+def sha256_file(path: Path) -> str:
 
     h = hashlib.sha256()
 
-    with open(path, 'rb') as f:
+    with open(path, "rb") as f:
+
         while True:
-            chunk = f.read(8192)
+
+            chunk = f.read(1024 * 1024)
+
             if not chunk:
                 break
+
             h.update(chunk)
 
     return h.hexdigest()
@@ -26,61 +29,67 @@ def sha256_file(path):
 
 def build_archive(day):
 
-    day_dir = WORKSPACE / day
+    workspace = WORKSPACE / day
 
-    archive_dir = BACKUP_TARGET / 'archives'
-    hash_dir = BACKUP_TARGET / 'hashes'
+    archive_dir = WORKSPACE / "archive"
 
-    archive_dir.mkdir(parents=True, exist_ok=True)
-    hash_dir.mkdir(parents=True, exist_ok=True)
+    archive_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
-    tar_file = archive_dir / f'{day}.tar'
+    tar_file = archive_dir / f"{day}.tar"
 
     subprocess.run(
         [
-            'tar',
-            '-cf',
+            "tar",
+            "-cf",
             str(tar_file),
-            '-C',
+            "-C",
             str(WORKSPACE),
-            day
+            day,
         ],
-        check=True
+        check=True,
     )
 
     subprocess.run(
         [
             "zstd",
             "-f",
-            str(tar_file)
+            str(tar_file),
         ],
-        check=True
+        check=True,
     )
 
-    zst_file = Path(str(tar_file) + '.zst')
+    zst_file = Path(str(tar_file) + ".zst")
 
     public_key = ARCHIVE_PUBLIC_KEY.read_text().strip()
 
-    encrypted = Path(str(zst_file) + '.age')
+    encrypted = Path(str(zst_file) + ".age")
 
     subprocess.run(
         [
-            'age',
-            '-r',
+            "age",
+            "-r",
             public_key,
-            '-o',
+            "-o",
             str(encrypted),
-            str(zst_file)
+            str(zst_file),
         ],
-        check=True
+        check=True,
     )
 
     digest = sha256_file(encrypted)
 
-    hash_file = hash_dir / f'{day}.sha256'
+    hash_file = archive_dir / f"{day}.sha256"
+
     hash_file.write_text(digest)
 
     tar_file.unlink()
+
     zst_file.unlink()
 
-    return encrypted
+    return {
+        "archive": encrypted,
+        "hash": hash_file,
+    }
