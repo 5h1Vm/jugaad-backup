@@ -1,3 +1,4 @@
+from .artifact import BackupArtifact
 from .local import LocalStorage
 
 
@@ -8,6 +9,16 @@ class StorageManager:
         self.providers = [
 
             LocalStorage(),
+
+            #
+            # Future providers
+            #
+            # USBStorage(),
+            # S3Storage(),
+            # BackblazeStorage(),
+            # GoogleDriveStorage(),
+            # OneDriveStorage(),
+            #
 
         ]
 
@@ -23,31 +34,33 @@ class StorageManager:
 
         ]
 
+    def healthy_providers(self):
+
+        return [
+
+            provider
+
+            for provider in self.enabled_providers()
+
+            if provider.healthcheck()
+
+        ]
+
     def upload(
         self,
-        archive,
-        manifest,
+        artifact: BackupArtifact,
     ):
 
         uploaded = []
 
-        for provider in self.enabled_providers():
-
-            if not provider.healthcheck():
-
-                print(
-                    f"[Storage] {provider.name} unavailable"
-                )
-
-                continue
+        for provider in self.healthy_providers():
 
             print(
-                f"[Storage] Uploading to {provider.name}"
+                f"[Storage] Upload -> {provider.name}"
             )
 
             provider.upload(
-                archive,
-                manifest
+                artifact
             )
 
             uploaded.append(

@@ -1,11 +1,9 @@
 import hashlib
 
-from pathlib import Path
-
-from .config import WORKSPACE
+from storage.artifact import BackupArtifact
 
 
-def sha256_file(path: Path) -> str:
+def sha256_file(path):
 
     h = hashlib.sha256()
 
@@ -13,7 +11,7 @@ def sha256_file(path: Path) -> str:
 
         while True:
 
-            chunk = f.read(1024 * 1024)
+            chunk = f.read(8192)
 
             if not chunk:
                 break
@@ -23,36 +21,24 @@ def sha256_file(path: Path) -> str:
     return h.hexdigest()
 
 
-def verify_archive(day):
+def verify_archive(
+    artifact: BackupArtifact,
+):
 
-    archive = (
-        WORKSPACE
-        / "archive"
-        / f"{day}.tar.zst.age"
+    digest = sha256_file(
+        artifact.archive
     )
 
-    hash_file = (
-        WORKSPACE
-        / "archive"
-        / f"{day}.sha256"
+    expected = (
+        artifact.sha256
+        .read_text()
+        .strip()
     )
 
-    if not archive.exists():
-
-        raise FileNotFoundError(archive)
-
-    if not hash_file.exists():
-
-        raise FileNotFoundError(hash_file)
-
-    expected = hash_file.read_text().strip()
-
-    actual = sha256_file(archive)
-
-    if expected != actual:
+    if digest != expected:
 
         raise RuntimeError(
-            "Archive checksum mismatch."
+            "Archive verification failed"
         )
 
     return True

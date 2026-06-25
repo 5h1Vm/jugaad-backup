@@ -31,10 +31,11 @@ class StorageProvider(ABC):
     def upload(
         self,
         archive: Path,
+        sha256: Path,
         manifest: Path,
     ) -> bool:
         """
-        Upload archive + manifest.
+        Upload archive, checksum and manifest.
         """
         ...
 

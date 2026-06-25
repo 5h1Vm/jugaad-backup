@@ -1,154 +1,181 @@
 import shutil
+
 from pathlib import Path
 
+from .artifact import BackupArtifact
 from .base import StorageProvider
-from .config import load_config
-from .utils import sha256
+from .config import (
+    STORAGE_ROOT,
+    LOCAL_ENABLED,
+)
 
 
 class LocalStorage(StorageProvider):
 
-    @property
-    def name(self):
+    name = "Local"
 
-        return "Local"
+    def __init__(self):
 
-    def enabled(self):
+        self.root = STORAGE_ROOT
 
-        cfg = load_config()
+    def enabled(self) -> bool:
 
-        return (
-            cfg.get("LOCAL_ENABLED", "false").lower()
-            == "true"
-        )
+        return LOCAL_ENABLED
 
-    @property
-    def root(self):
-
-        cfg = load_config()
-
-        return Path(
-            cfg["LOCAL_PATH"]
-        )
-
-    def healthcheck(self):
-
-        try:
-
-            self.root.mkdir(
-                parents=True,
-                exist_ok=True
-            )
-
-            return True
-
-        except Exception:
-
-            return False
-
-    def upload(
-        self,
-        archive,
-        manifest,
-    ):
+    def healthcheck(self) -> bool:
 
         self.root.mkdir(
             parents=True,
             exist_ok=True
         )
 
-        archive_dst = (
-            self.root
-            / "archives"
-        )
+        return self.root.exists()
 
-        manifest_dst = (
-            self.root
-            / "manifests"
-        )
+    def upload(
+        self,
+        artifact: BackupArtifact,
+    ) -> bool:
 
-        archive_dst.mkdir(
+        archives = self.root / "archives"
+        hashes = self.root / "hashes"
+        manifests = self.root / "manifests"
+
+        archives.mkdir(
+            parents=True,
             exist_ok=True
         )
 
-        manifest_dst.mkdir(
+        hashes.mkdir(
+            parents=True,
             exist_ok=True
         )
 
-        archive_copy = (
-            archive_dst
-            / archive.name
+        manifests.mkdir(
+            parents=True,
+            exist_ok=True
         )
 
-        manifest_copy = (
-            manifest_dst
-            / manifest.name
+        self._copy(
+            artifact.archive,
+            archives / artifact.archive.name
         )
 
-        shutil.copy2(
-            archive,
-            archive_copy
+        self._copy(
+            artifact.sha256,
+            hashes / artifact.sha256.name
         )
 
-        shutil.copy2(
-            manifest,
-            manifest_copy
-        )
+        if artifact.manifest is not None:
 
-        if (
-            sha256(archive)
-            != sha256(archive_copy)
-        ):
-            raise RuntimeError(
-                "Archive verification failed"
-            )
-
-        if (
-            sha256(manifest)
-            != sha256(manifest_copy)
-        ):
-            raise RuntimeError(
-                "Manifest verification failed"
+            self._copy(
+                artifact.manifest,
+                manifests / artifact.manifest.name
             )
 
         return True
 
     def download(
         self,
-        backup_name,
-        destination,
-    ):
+        backup_name: str,
+        destination: Path,
+    ) -> bool:
 
-        raise NotImplementedError
+        source = (
+            self.root
+            / "archives"
+            / f"{backup_name}.tar.zst.age"
+        )
+
+        if not source.exists():
+
+            return False
+
+        destination.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+        shutil.copy2(
+            source,
+            destination / source.name
+        )
+
+        return True
 
     def delete(
         self,
-        backup_name,
-    ):
+        backup_name: str,
+    ) -> bool:
 
-        raise NotImplementedError
+        removed = False
+
+        for folder, ext in [
+
+            ("archives", ".tar.zst.age"),
+
+            ("hashes", ".sha256"),
+
+            ("manifests", ".manifest.json"),
+
+        ]:
+
+            path = (
+                self.root
+                / folder
+                / f"{backup_name}{ext}"
+            )
+
+            if path.exists():
+
+                path.unlink()
+
+                removed = True
+
+        return removed
 
     def exists(
         self,
-        backup_name,
-    ):
+        backup_name: str,
+    ) -> bool:
 
         return (
             self.root
             / "archives"
-            / backup_name
+            / f"{backup_name}.tar.zst.age"
         ).exists()
 
     def list_backups(self):
 
-        archive_dir = (
-            self.root
-            / "archives"
-        )
+        archives = self.root / "archives"
 
-        if not archive_dir.exists():
+        if not archives.exists():
+
             return []
 
-        return sorted(
-            archive_dir.iterdir()
+        return [
+
+            archive.name.replace(
+                ".tar.zst.age",
+                ""
+            )
+
+            for archive in sorted(
+                archives.glob("*.tar.zst.age")
+            )
+
+        ]
+
+    def _copy(
+        self,
+        src: Path,
+        dst: Path,
+    ):
+
+        if src.resolve() == dst.resolve():
+
+            return
+
+        shutil.copy2(
+            src,
+            dst
         )

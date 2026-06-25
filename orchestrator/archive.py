@@ -1,6 +1,6 @@
 import hashlib
 import subprocess
-
+from storage.artifact import BackupArtifact
 from pathlib import Path
 
 from .config import (
@@ -89,7 +89,14 @@ def build_archive(day):
 
     zst_file.unlink()
 
-    return {
-        "archive": encrypted,
-        "hash": hash_file,
-    }
+    return BackupArtifact(
+
+        day=day,
+
+        archive=encrypted,
+
+        sha256=hash_file,
+
+        size=encrypted.stat().st_size,
+
+    )

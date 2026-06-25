@@ -1,10 +1,8 @@
 from datetime import date
-import shutil
 
 from .config import (
     WORKSPACE,
-    BACKUP_TARGET,
-    CFG
+    CFG,
 )
 
 from .report import BackupReport
@@ -12,6 +10,8 @@ from .cleanup import cleanup_workspace
 from .manifest import build_manifest
 from .archive import build_archive
 from .verify import verify_archive
+
+from storage.manager import StorageManager
 
 from lib.logger import Logger
 
@@ -22,7 +22,7 @@ def run_notion(workspace, logger):
 
     return collect(
         str(workspace),
-        logger
+        logger,
     )
 
 
@@ -32,7 +32,7 @@ def run_cloudflare(workspace, logger):
 
     return collect(
         str(workspace),
-        logger
+        logger,
     )
 
 
@@ -42,14 +42,14 @@ def run_m365(workspace, logger):
 
     return collect(
         str(workspace),
-        logger
+        logger,
     )
 
 
 def process_collector_result(
     report,
     name,
-    stats
+    stats,
 ):
 
     if not stats:
@@ -64,29 +64,26 @@ def process_collector_result(
 
             "errors": [
                 "Collector returned no statistics"
-            ]
+            ],
         }
-
 
     report.collector_finish(
         name,
-        **stats
+        **stats,
     )
-
 
     for warning in stats.get(
         "warnings",
-        []
+        [],
     ):
 
         report.warning(
             warning
         )
 
-
     for error in stats.get(
         "errors",
-        []
+        [],
     ):
 
         report.error(
@@ -100,213 +97,172 @@ def main():
         date.today()
     )
 
-
     day_dir = (
         WORKSPACE /
         today
     )
 
-
     day_dir.mkdir(
         parents=True,
-        exist_ok=True
+        exist_ok=True,
     )
-
 
     logger = Logger(
         day_dir / "logs"
     )
 
-
     report = BackupReport()
-
 
     logger.info(
         f"Workspace: {day_dir}"
     )
-
 
     #
     # Microsoft 365
     #
     if CFG.get(
         "ENABLE_M365",
-        "false"
+        "false",
     ).lower() == "true":
-
 
         logger.section(
             "Microsoft 365"
         )
 
-
         report.collector_start(
             "m365"
         )
-
 
         try:
 
             stats = run_m365(
                 day_dir / "m365",
-                logger
+                logger,
             )
-
 
             process_collector_result(
                 report,
                 "m365",
-                stats
+                stats,
             )
 
-
         except Exception as e:
-
 
             logger.error(
                 f"M365 failed: {e}"
             )
 
-
             report.error(
                 str(e)
             )
-
 
             report.collector_finish(
                 "m365",
                 status="failed",
                 items={},
                 warnings=[],
-                errors=[str(e)]
+                errors=[str(e)],
             )
 
-
         logger.end_section()
-
-
 
     #
     # Cloudflare
     #
     if CFG.get(
         "ENABLE_CLOUDFLARE",
-        "false"
+        "false",
     ).lower() == "true":
-
 
         logger.section(
             "Cloudflare"
         )
 
-
         report.collector_start(
             "cloudflare"
         )
 
-
         try:
-
 
             stats = run_cloudflare(
                 day_dir / "cloudflare",
-                logger
+                logger,
             )
-
 
             process_collector_result(
                 report,
                 "cloudflare",
-                stats
+                stats,
             )
 
-
         except Exception as e:
-
 
             logger.error(
                 f"Cloudflare failed: {e}"
             )
 
-
             report.error(
                 str(e)
             )
-
 
             report.collector_finish(
                 "cloudflare",
                 status="failed",
                 items={},
                 warnings=[],
-                errors=[str(e)]
+                errors=[str(e)],
             )
 
-
         logger.end_section()
-
-
 
     #
     # Notion
     #
     if CFG.get(
         "ENABLE_NOTION",
-        "false"
+        "false",
     ).lower() == "true":
-
 
         logger.section(
             "Notion"
         )
 
-
         report.collector_start(
             "notion"
         )
 
-
         try:
-
 
             stats = run_notion(
                 day_dir / "notion",
-                logger
+                logger,
             )
-
 
             process_collector_result(
                 report,
                 "notion",
-                stats
+                stats,
             )
 
-
         except Exception as e:
-
 
             logger.error(
                 f"Notion failed: {e}"
             )
 
-
             report.error(
                 str(e)
             )
-
 
             report.collector_finish(
                 "notion",
                 status="failed",
                 items={},
                 warnings=[],
-                errors=[str(e)]
+                errors=[str(e)],
             )
 
-
         logger.end_section()
-
-
 
     #
     # Manifest
@@ -315,15 +271,11 @@ def main():
         "Manifest"
     )
 
-
     manifest = build_manifest(
         day_dir
     )
 
-
     logger.end_section()
-
-
 
     #
     # Archive
@@ -332,21 +284,19 @@ def main():
         "Archive"
     )
 
-
-    archive = build_archive(
+    artifact = build_archive(
         today
     )
 
+    artifact.manifest = manifest
 
     report.archive(
-        file=archive.name,
-        size=archive.stat().st_size
+        file=artifact.archive.name,
+        sha256=artifact.sha256.name,
+        size=artifact.size,
     )
 
-
     logger.end_section()
-
-
 
     #
     # Verification
@@ -355,62 +305,46 @@ def main():
         "Verification"
     )
 
-
     try:
 
-
         verify_archive(
-            today
+            artifact
         )
-
 
         report.verification(
             verified=True
         )
 
-
     except Exception as e:
-
 
         report.error(
             str(e)
         )
 
-
         report.verification(
             verified=False
         )
 
-
         raise
-
 
     logger.end_section()
 
-
-
     #
-    # Copy manifest
+    # Storage
     #
-    manifest_target = (
-        BACKUP_TARGET /
-        "manifests" /
-        f"{today}.manifest.json"
+    logger.section(
+        "Storage"
     )
 
-
-    manifest_target.parent.mkdir(
-        parents=True,
-        exist_ok=True
+    uploaded = StorageManager().upload(
+        artifact
     )
 
-
-    shutil.copy2(
-        manifest,
-        manifest_target
+    report.archive(
+        uploaded_to=uploaded
     )
 
-
+    logger.end_section()
 
     #
     # Cleanup
@@ -419,32 +353,24 @@ def main():
         "Cleanup"
     )
 
-
     deleted = cleanup_workspace()
-
 
     report.cleanup(
         removed=deleted
     )
 
-
     logger.end_section()
-
-
 
     #
     # Final report
     #
     report.finish()
 
-
     report.write(
         day_dir
     )
 
-
     logger.finish()
-
 
 
 if __name__ == "__main__":
