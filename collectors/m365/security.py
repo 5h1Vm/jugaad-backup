@@ -1,8 +1,8 @@
 import json
 
 from . import config
-
 from .graph import graph_paginated_get
+
 
 SECURITY_ENDPOINTS = {
 
@@ -22,10 +22,15 @@ SECURITY_ENDPOINTS = {
 
 def collect_security(headers, logger):
 
+    counts = {}
+
+    warnings = []
+
     security_dir = (
-    config.WORKSPACE /
-    "security"
+        config.WORKSPACE /
+        "security"
     )
+
     security_dir.mkdir(
         parents=True,
         exist_ok=True
@@ -51,11 +56,20 @@ def collect_security(headers, logger):
 
         except Exception as e:
 
+            message = (
+                f"{name} endpoint failed: {e}"
+            )
+
             logger.info(
-                f"[-] {name}: {e}"
+                f"[-] {message}"
+            )
+
+            warnings.append(
+                message
             )
 
             continue
+
 
         outfile = (
             security_dir /
@@ -73,6 +87,26 @@ def collect_security(headers, logger):
                 indent=2
             )
 
+
+        count = len(data)
+
+        key_map = {
+    "riskyUsers": "risky_users",
+    "riskDetections": "risk_detections",
+    "secureScore": "secure_score",
+    "alerts": "alerts"
+}
+
+counts[key_map[name]] = count
+
+
         logger.info(
-            f"Collected {len(data)}"
+            f"Collected {count}"
         )
+
+
+    return {
+        "items": counts,
+        "warnings": warnings,
+            "errors": []
+    }

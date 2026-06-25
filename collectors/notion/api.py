@@ -6,6 +6,7 @@ from .api_client import NotionAPI
 
 class NotionMetadataCollector:
 
+
     def __init__(self, output_dir: Path):
 
         self.output_dir = Path(output_dir)
@@ -17,9 +18,15 @@ class NotionMetadataCollector:
 
         self.api = NotionAPI()
 
+
+
     def _write(self, filename, data):
 
-        path = self.output_dir / filename
+        path = (
+            self.output_dir /
+            filename
+        )
+
 
         with open(
             path,
@@ -34,19 +41,15 @@ class NotionMetadataCollector:
                 ensure_ascii=False
             )
 
-        print(f"[+] Wrote {path}")
 
         return path
 
+
+
     def collect_pages(self):
 
-        print()
-
-        print("===================================")
-        print("Collecting Pages")
-        print("===================================")
-
         pages = []
+
 
         for obj in self.api.list_all_objects():
 
@@ -54,22 +57,23 @@ class NotionMetadataCollector:
 
                 pages.append(obj)
 
-        print(f"[+] Pages collected: {len(pages)}")
 
-        return self._write(
+        self._write(
             "pages.json",
             pages
         )
 
+
+        return {
+            "pages": len(pages)
+        }
+
+
+
     def collect_data_sources(self):
 
-        print()
-
-        print("===================================")
-        print("Collecting Data Sources")
-        print("===================================")
-
         data_sources = []
+
 
         for obj in self.api.list_all_objects():
 
@@ -80,26 +84,25 @@ class NotionMetadataCollector:
 
                 data_sources.append(obj)
 
-        print(
-            f"[+] Data Sources collected: {len(data_sources)}"
-        )
 
-        return self._write(
+        self._write(
             "data_sources.json",
             data_sources
         )
 
+
+        return {
+            "data_sources": len(data_sources)
+        }
+
+
+
     def collect_users(self):
-
-        print()
-
-        print("===================================")
-        print("Collecting Users")
-        print("===================================")
 
         users = []
 
         cursor = None
+
 
         while True:
 
@@ -107,33 +110,51 @@ class NotionMetadataCollector:
                 start_cursor=cursor
             )
 
+
             users.extend(
                 result["results"]
             )
 
+
             if not result["has_more"]:
+
                 break
+
 
             cursor = result["next_cursor"]
 
-        print(f"[+] Users collected: {len(users)}")
 
-        return self._write(
+
+        self._write(
             "users.json",
             users
         )
 
-    def collect_all(self):
 
         return {
-
-            "pages":
-                self.collect_pages(),
-
-            "data_sources":
-                self.collect_data_sources(),
-
-            "users":
-                self.collect_users()
-
+            "users": len(users)
         }
+
+
+
+    def collect_all(self):
+
+        stats = {}
+
+
+        stats.update(
+            self.collect_pages()
+        )
+
+
+        stats.update(
+            self.collect_data_sources()
+        )
+
+
+        stats.update(
+            self.collect_users()
+        )
+
+
+        return stats

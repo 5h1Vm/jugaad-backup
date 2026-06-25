@@ -1,9 +1,7 @@
 import json
 
 from . import config
-
 from .graph import graph_paginated_get
-
 from .state import load_state
 from .state import save_state
 
@@ -29,13 +27,18 @@ AUDIT_ENDPOINTS = {
 
 def collect_audit(headers, logger):
 
+    counts = {}
+
     state = load_state()
 
     if "audit" not in state:
 
         state["audit"] = {}
 
-    audit_dir = config.WORKSPACE / "audit"
+    audit_dir = (
+        config.WORKSPACE /
+        "audit"
+    )
 
     audit_dir.mkdir(
         parents=True,
@@ -87,24 +90,28 @@ def collect_audit(headers, logger):
                 indent=2
             )
 
+        count = len(data)
+
+        counts[dataset] = count
+
         logger.info(
-            f"Collected {len(data)}"
+            f"Collected {count}"
         )
 
         if data:
 
-            newest = max(
-                item.get(
-                    cfg["timestamp"]
-                )
+            timestamps = [
+                item.get(cfg["timestamp"])
                 for item in data
-                if item.get(
-                    cfg["timestamp"]
-                )
-            )
+                if item.get(cfg["timestamp"])
+            ]
 
-            state["audit"][
-                dataset
-            ] = newest
+            if timestamps:
+
+                state["audit"][dataset] = max(
+                    timestamps
+                )
 
     save_state(state)
+
+    return counts

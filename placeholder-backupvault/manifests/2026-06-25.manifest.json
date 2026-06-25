@@ -1,15 +1,11 @@
 {
     "date": "2026-06-25",
-    "file_count": 45,
-    "total_size": 5701737,
+    "file_count": 35,
+    "total_size": 4573843,
     "files": [
         {
             "path": "logs/backup.log",
-            "size": 5540
-        },
-        {
-            "path": "notion/manifest.json",
-            "size": 1490
+            "size": 5258
         },
         {
             "path": "m365/security/riskDetections.json",
@@ -17,7 +13,7 @@
         },
         {
             "path": "m365/security/secureScore.json",
-            "size": 2203530
+            "size": 2203533
         },
         {
             "path": "m365/snapshots/conditionalAccessPolicies.json",
@@ -61,47 +57,11 @@
         },
         {
             "path": "m365/audit/signins.json",
-            "size": 3217
+            "size": 3245
         },
         {
             "path": "m365/audit/provisioning.json",
             "size": 2
-        },
-        {
-            "path": "notion/api/pages.json",
-            "size": 952018
-        },
-        {
-            "path": "notion/api/data_sources_full.json",
-            "size": 3111
-        },
-        {
-            "path": "notion/api/users.json",
-            "size": 679
-        },
-        {
-            "path": "notion/api/statistics.json",
-            "size": 206
-        },
-        {
-            "path": "notion/api/inventory.json",
-            "size": 28607
-        },
-        {
-            "path": "notion/api/data_sources.json",
-            "size": 3053
-        },
-        {
-            "path": "notion/browser/html_export.zip",
-            "size": 111598
-        },
-        {
-            "path": "notion/browser/markdown_export.zip",
-            "size": 24358
-        },
-        {
-            "path": "notion/api/rows/a072140a-df94-8364-9113-07ea21165718.json",
-            "size": 2523
         },
         {
             "path": "cloudflare/security/waf-packages.json",

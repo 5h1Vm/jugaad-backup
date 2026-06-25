@@ -17,9 +17,11 @@ class DataSourceExporter:
 
         self.api = NotionAPI()
 
+
     def _write(self, filename, data):
 
         outfile = self.output_dir / filename
+
 
         with open(
             outfile,
@@ -34,15 +36,20 @@ class DataSourceExporter:
                 ensure_ascii=False
             )
 
+
         print(f"[+] Wrote {outfile}")
 
         return outfile
+
+
 
     def export(self):
 
         objects = self.api.list_all_objects()
 
+
         data_sources = []
+
 
         for obj in objects:
 
@@ -53,29 +60,47 @@ class DataSourceExporter:
 
                 data_sources.append(obj)
 
-        print()
 
+
+        print()
         print("========================================")
         print("Exporting Data Sources")
         print("========================================")
 
-        print(f"[+] Found {len(data_sources)} data sources")
+
+        print(
+            f"[+] Found {len(data_sources)} data sources"
+        )
+
 
         exported = []
+
 
         for ds in data_sources:
 
             dsid = ds["id"]
 
-            print(f"[+] Retrieving {dsid}")
+
+            print(
+                f"[+] Retrieving {dsid}"
+            )
+
 
             details = self.api.client.data_sources.retrieve(
                 data_source_id=dsid
             )
 
-            exported.append(details)
 
-        return self._write(
+            exported.append(
+                details
+            )
+
+
+
+        self._write(
             "data_sources_full.json",
             exported
         )
+
+
+        return len(exported)

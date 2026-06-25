@@ -1,11 +1,10 @@
 import json
 
 from . import config
-
 from .graph import graph_paginated_get
 
 
-SNAPSHOTS = {
+SNAPSHOT_KEYS = {
 
     "users":
     "users",
@@ -17,10 +16,10 @@ SNAPSHOTS = {
     "applications",
 
     "servicePrincipals":
-    "servicePrincipals",
+    "service_principals",
 
     "roles":
-    "directoryRoles",
+    "roles",
 
     "domains":
     "domains",
@@ -29,18 +28,19 @@ SNAPSHOTS = {
     "organization",
 
     "conditionalAccessPolicies":
-    "identity/conditionalAccess/policies",
+    "conditional_access_policies",
 
     "namedLocations":
-    "identity/conditionalAccess/namedLocations"
+    "named_locations"
 }
-
 
 def collect_snapshots(headers, logger):
 
+    counts = {}
+
     snapshot_dir = (
-    config.WORKSPACE /
-    "snapshots"
+        config.WORKSPACE /
+        "snapshots"
     )
 
     snapshot_dir.mkdir(
@@ -80,6 +80,14 @@ def collect_snapshots(headers, logger):
                 indent=2
             )
 
+        count = len(data)
+
+        counts[
+            SNAPSHOT_KEYS[name]
+        ] = count
+
         logger.info(
-            f"Collected {len(data)}"
+            f"Collected {count}"
         )
+
+    return counts
