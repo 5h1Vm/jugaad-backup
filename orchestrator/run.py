@@ -285,10 +285,9 @@ def main():
     )
 
     artifact = build_archive(
-        today
+        day=today,
+        manifest=manifest,
     )
-
-    artifact.manifest = manifest
 
     report.archive(
         file=artifact.archive.name,
@@ -339,6 +338,12 @@ def main():
     uploaded = StorageManager().upload(
         artifact
     )
+
+    if not uploaded:
+
+        raise RuntimeError(
+            "Backup stored nowhere."
+        )
 
     report.archive(
         uploaded_to=uploaded

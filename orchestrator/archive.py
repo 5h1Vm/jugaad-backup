@@ -27,8 +27,11 @@ def sha256_file(path: Path) -> str:
     return h.hexdigest()
 
 
-def build_archive(day):
-
+def build_archive(
+    day,
+    manifest=None,
+    report=None,
+):
     workspace = WORKSPACE / day
 
     archive_dir = WORKSPACE / "archive"
@@ -96,6 +99,10 @@ def build_archive(day):
         archive=encrypted,
 
         sha256=hash_file,
+
+        manifest=manifest,
+
+        report=report,
 
         size=encrypted.stat().st_size,
 

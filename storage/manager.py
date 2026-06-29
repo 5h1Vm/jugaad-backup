@@ -6,19 +6,13 @@ class StorageManager:
 
     def __init__(self):
 
+        from .registry import PROVIDERS
+
         self.providers = [
 
-            LocalStorage(),
+            provider()
 
-            #
-            # Future providers
-            #
-            # USBStorage(),
-            # S3Storage(),
-            # BackblazeStorage(),
-            # GoogleDriveStorage(),
-            # OneDriveStorage(),
-            #
+            for provider in PROVIDERS
 
         ]
 

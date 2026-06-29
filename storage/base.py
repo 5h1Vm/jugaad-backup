@@ -1,11 +1,10 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 
+from .artifact import BackupArtifact
+
 
 class StorageProvider(ABC):
-    """
-    Base interface implemented by every storage backend.
-    """
 
     @property
     @abstractmethod
@@ -14,29 +13,17 @@ class StorageProvider(ABC):
 
     @abstractmethod
     def enabled(self) -> bool:
-        """
-        Return True if this provider is configured
-        and should receive backups.
-        """
         ...
 
     @abstractmethod
     def healthcheck(self) -> bool:
-        """
-        Verify the provider is reachable.
-        """
         ...
 
     @abstractmethod
     def upload(
         self,
-        archive: Path,
-        sha256: Path,
-        manifest: Path,
+        artifact: BackupArtifact,
     ) -> bool:
-        """
-        Upload archive, checksum and manifest.
-        """
         ...
 
     @abstractmethod

@@ -57,7 +57,6 @@ STORAGE_ROOT = Path(
     )
 )
 
-
 #
 # USB
 #
@@ -68,6 +67,16 @@ USB_ENABLED = enabled(
 
 USB_UUID = CFG.get(
     "USB_UUID",
+    ""
+)
+
+USB_LABEL = CFG.get(
+    "USB_LABEL",
+    ""
+)
+
+USB_BACKUP_PATH = CFG.get(
+    "USB_BACKUP_PATH",
     ""
 )
 
