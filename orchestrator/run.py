@@ -335,14 +335,15 @@ def main():
         "Storage"
     )
 
-    uploaded = StorageManager().upload(
+    storage = StorageManager()
+
+    uploaded = storage.upload(
         artifact
     )
 
     if not uploaded:
-
         raise RuntimeError(
-            "Backup stored nowhere."
+            "No storage backend successfully accepted this backup."
         )
 
     report.archive(
