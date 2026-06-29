@@ -1,5 +1,4 @@
 from .artifact import BackupArtifact
-from .local import LocalStorage
 
 
 class StorageManager:
@@ -30,15 +29,31 @@ class StorageManager:
 
     def healthy_providers(self):
 
-        return [
+        healthy = []
 
-            provider
+        for provider in self.enabled_providers():
 
-            for provider in self.enabled_providers()
+            try:
 
-            if provider.healthcheck()
+                if provider.healthcheck():
 
-        ]
+                    healthy.append(
+                        provider
+                    )
+
+                else:
+
+                    print(
+                        f"[Storage] {provider.name} unavailable"
+                    )
+
+            except Exception as e:
+
+                print(
+                    f"[Storage] {provider.name} healthcheck failed: {e}"
+                )
+
+        return healthy
 
     def upload(
         self,
@@ -53,12 +68,28 @@ class StorageManager:
                 f"[Storage] Upload -> {provider.name}"
             )
 
-            provider.upload(
-                artifact
-            )
+            try:
 
-            uploaded.append(
-                provider.name
-            )
+                ok = provider.upload(
+                    artifact
+                )
+
+                if ok:
+
+                    uploaded.append(
+                        provider.name
+                    )
+
+                else:
+
+                    print(
+                        f"[Storage] {provider.name} upload failed"
+                    )
+
+            except Exception as e:
+
+                print(
+                    f"[Storage] {provider.name}: {e}"
+                )
 
         return uploaded

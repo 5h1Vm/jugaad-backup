@@ -24,12 +24,11 @@ class LocalStorage(StorageProvider):
 
     def healthcheck(self) -> bool:
 
-        self.root.mkdir(
-            parents=True,
-            exist_ok=True
+        return (
+            self.root.exists()
+            and
+            self.root.is_dir()
         )
-
-        return self.root.exists()
 
     def upload(
         self,
@@ -65,7 +64,7 @@ class LocalStorage(StorageProvider):
             hashes / artifact.sha256.name
         )
 
-        if artifact.manifest is not None:
+        if artifact.manifest:
 
             self._copy(
                 artifact.manifest,
@@ -80,13 +79,15 @@ class LocalStorage(StorageProvider):
         destination: Path,
     ) -> bool:
 
-        source = (
+        archive = (
+
             self.root
             / "archives"
             / f"{backup_name}.tar.zst.age"
+
         )
 
-        if not source.exists():
+        if not archive.exists():
 
             return False
 
@@ -96,8 +97,8 @@ class LocalStorage(StorageProvider):
         )
 
         shutil.copy2(
-            source,
-            destination / source.name
+            archive,
+            destination / archive.name
         )
 
         return True
@@ -119,15 +120,17 @@ class LocalStorage(StorageProvider):
 
         ]:
 
-            path = (
+            file = (
+
                 self.root
                 / folder
                 / f"{backup_name}{ext}"
+
             )
 
-            if path.exists():
+            if file.exists():
 
-                path.unlink()
+                file.unlink()
 
                 removed = True
 
@@ -139,9 +142,11 @@ class LocalStorage(StorageProvider):
     ) -> bool:
 
         return (
+
             self.root
             / "archives"
             / f"{backup_name}.tar.zst.age"
+
         ).exists()
 
     def list_backups(self):
@@ -154,13 +159,15 @@ class LocalStorage(StorageProvider):
 
         return [
 
-            archive.name.replace(
+            file.name.replace(
                 ".tar.zst.age",
                 ""
             )
 
-            for archive in sorted(
-                archives.glob("*.tar.zst.age")
+            for file in sorted(
+                archives.glob(
+                    "*.tar.zst.age"
+                )
             )
 
         ]
