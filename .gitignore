@@ -48,7 +48,7 @@ workspace/
 restore/
 state/
 logs/
-
+BACKBLAZE_REMOTE/
 placeholder-backupvault/
 
 
