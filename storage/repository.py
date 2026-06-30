@@ -6,13 +6,13 @@ from .artifact import BackupArtifact
 from .base import StorageProvider
 from .config import (
     STORAGE_ROOT,
-    LOCAL_ENABLED,
+    REPOSITORY_ENABLED,
 )
 
 
-class LocalStorage(StorageProvider):
+class Repository(StorageProvider):
 
-    name = "Local"
+    name = "REPOSITORY"
 
     def __init__(self):
 
@@ -20,7 +20,7 @@ class LocalStorage(StorageProvider):
 
     def enabled(self) -> bool:
 
-        return LOCAL_ENABLED
+        return REPOSITORY_ENABLED
 
     def healthcheck(self) -> bool:
 

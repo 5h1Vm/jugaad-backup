@@ -418,7 +418,7 @@ python3 -m orchestrator.cleanup
 
 * Backblaze B2 Storage Backend
 * Generic S3 Storage Backend
-* Local HDD Synchronization
+* REPOSITORY HDD Synchronization
 * Incremental Backup Schedulinga
 * Structured Logging
 * Health Reporting

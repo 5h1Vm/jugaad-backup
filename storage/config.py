@@ -43,16 +43,16 @@ def enabled(name: str) -> bool:
 
 
 #
-# Local Storage
+# REPOSITORY Storage
 #
 
-LOCAL_ENABLED = enabled(
-    "LOCAL_ENABLED"
+REPOSITORY_ENABLED = enabled(
+    "REPOSITORY_ENABLED"
 )
 
 STORAGE_ROOT = Path(
     CFG.get(
-        "LOCAL_PATH",
+        "REPOSITORY_PATH",
         "backupvault"
     )
 )

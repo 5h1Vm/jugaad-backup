@@ -1,9 +1,12 @@
 from .artifact import BackupArtifact
+from .repository import Repository
 
 
 class StorageManager:
 
     def __init__(self):
+
+        self.repository = Repository()
 
         from .registry import PROVIDERS
 
@@ -37,9 +40,7 @@ class StorageManager:
 
                 if provider.healthcheck():
 
-                    healthy.append(
-                        provider
-                    )
+                    healthy.append(provider)
 
                 else:
 
@@ -50,7 +51,7 @@ class StorageManager:
             except Exception as e:
 
                 print(
-                    f"[Storage] {provider.name} healthcheck failed: {e}"
+                    f"[Storage] {provider.name}: {e}"
                 )
 
         return healthy
@@ -60,30 +61,42 @@ class StorageManager:
         artifact: BackupArtifact,
     ):
 
-        uploaded = []
+        #
+        # Repository is mandatory.
+        #
+
+        print(
+            "[Repository] Storing backup"
+        )
+
+        self.repository.upload(
+            artifact
+        )
+
+        uploaded = [
+
+            "Repository"
+
+        ]
+
+        #
+        # Replicate.
+        #
 
         for provider in self.healthy_providers():
 
             print(
-                f"[Storage] Upload -> {provider.name}"
+                f"[Storage] Replicate -> {provider.name}"
             )
 
             try:
 
-                ok = provider.upload(
+                if provider.upload(
                     artifact
-                )
-
-                if ok:
+                ):
 
                     uploaded.append(
                         provider.name
-                    )
-
-                else:
-
-                    print(
-                        f"[Storage] {provider.name} upload failed"
                     )
 
             except Exception as e:
