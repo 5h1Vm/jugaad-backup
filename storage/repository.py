@@ -5,7 +5,7 @@ from pathlib import Path
 from .artifact import BackupArtifact
 from .base import StorageProvider
 from .config import (
-    STORAGE_ROOT,
+    REPOSITORY_PATH,
     REPOSITORY_ENABLED,
 )
 
@@ -16,7 +16,7 @@ class Repository(StorageProvider):
 
     def __init__(self):
 
-        self.root = STORAGE_ROOT
+        self.root = REPOSITORY_PATH
 
     def enabled(self) -> bool:
 
