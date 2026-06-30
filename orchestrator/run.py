@@ -11,7 +11,8 @@ from .manifest import build_manifest
 from .archive import build_archive
 from .verify import verify_archive
 
-from storage.manager import StorageManager
+from storage.repository import Repository
+from storage.sync import SyncEngine
 
 from lib.logger import Logger
 
@@ -331,20 +332,26 @@ def main():
     #
     # Storage
     #
+
     logger.section(
         "Storage"
     )
 
-    storage = StorageManager()
+    repository = Repository()
 
-    uploaded = storage.upload(
+    if not repository.upload(
         artifact
-    )
+    ):
 
-    if not uploaded:
         raise RuntimeError(
-            "No storage backend successfully accepted this backup."
+            "Failed to store backup in repository."
         )
+
+    SyncEngine().sync()
+
+    uploaded = [
+        "Repository"
+    ]
 
     report.archive(
         uploaded_to=uploaded
