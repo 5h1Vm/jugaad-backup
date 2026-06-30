@@ -1,15 +1,17 @@
 from dataclasses import dataclass
 from pathlib import Path
+from datetime import datetime
 
 
 @dataclass(slots=True)
 class BackupArtifact:
     """
-    Represents one complete backup artifact produced by the
-    archive pipeline.
+    Represents one immutable backup.
     """
 
-    day: str
+    backup_id: str
+
+    created: datetime
 
     archive: Path
 
@@ -22,17 +24,17 @@ class BackupArtifact:
     size: int = 0
 
     @property
-    def archive_name(self) -> str:
+    def archive_name(self):
 
         return self.archive.name
 
     @property
-    def checksum_name(self) -> str:
+    def checksum_name(self):
 
         return self.sha256.name
 
     @property
-    def manifest_name(self) -> str | None:
+    def manifest_name(self):
 
         if self.manifest is None:
             return None

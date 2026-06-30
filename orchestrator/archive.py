@@ -1,7 +1,10 @@
 import hashlib
 import subprocess
-from storage.artifact import BackupArtifact
+
 from pathlib import Path
+from datetime import datetime
+
+from storage.artifact import BackupArtifact
 
 from .config import (
     WORKSPACE,
@@ -28,10 +31,14 @@ def sha256_file(path: Path) -> str:
 
 
 def build_archive(
-    day,
+
+    backup_id: str,
+    day: str,
     manifest=None,
     report=None,
+
 ):
+
     workspace = WORKSPACE / day
 
     archive_dir = WORKSPACE / "archive"
@@ -41,7 +48,7 @@ def build_archive(
         exist_ok=True,
     )
 
-    tar_file = archive_dir / f"{day}.tar"
+    tar_file = archive_dir / f"{backup_id}.tar"
 
     subprocess.run(
         [
@@ -66,9 +73,9 @@ def build_archive(
 
     zst_file = Path(str(tar_file) + ".zst")
 
-    public_key = ARCHIVE_PUBLIC_KEY.read_text().strip()
-
     encrypted = Path(str(zst_file) + ".age")
+
+    public_key = ARCHIVE_PUBLIC_KEY.read_text().strip()
 
     subprocess.run(
         [
@@ -84,7 +91,7 @@ def build_archive(
 
     digest = sha256_file(encrypted)
 
-    hash_file = archive_dir / f"{day}.sha256"
+    hash_file = archive_dir / f"{backup_id}.sha256"
 
     hash_file.write_text(digest)
 
@@ -94,7 +101,9 @@ def build_archive(
 
     return BackupArtifact(
 
-        day=day,
+        backup_id=backup_id,
+
+        created=datetime.now(),
 
         archive=encrypted,
 

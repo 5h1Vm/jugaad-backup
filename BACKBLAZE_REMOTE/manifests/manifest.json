@@ -1,11 +1,19 @@
 {
     "date": "2026-06-30",
-    "file_count": 45,
-    "total_size": 5896555,
+    "file_count": 47,
+    "total_size": 5734423,
     "files": [
         {
+            "path": "manifest.json",
+            "size": 4873
+        },
+        {
+            "path": "backup_report.json",
+            "size": 3587
+        },
+        {
             "path": "logs/backup.log",
-            "size": 7298
+            "size": 23990
         },
         {
             "path": "notion/manifest.json",
@@ -13,7 +21,7 @@
         },
         {
             "path": "m365/security/secure_score.json",
-            "size": 2209794
+            "size": 2209793
         },
         {
             "path": "m365/security/risk_detections.json",
@@ -57,11 +65,11 @@
         },
         {
             "path": "m365/audit/directoryAudits.json",
-            "size": 21395
+            "size": 2
         },
         {
             "path": "m365/audit/signins.json",
-            "size": 169129
+            "size": 3232
         },
         {
             "path": "m365/audit/provisioning.json",
@@ -93,11 +101,11 @@
         },
         {
             "path": "notion/browser/html_export.zip",
-            "size": 111616
+            "size": 111598
         },
         {
             "path": "notion/browser/markdown_export.zip",
-            "size": 24365
+            "size": 24390
         },
         {
             "path": "notion/api/rows/a072140a-df94-8364-9113-07ea21165718.json",

@@ -1,5 +1,5 @@
 from datetime import date
-
+from .id import new_backup_id
 from .config import (
     WORKSPACE,
     CFG,
@@ -97,6 +97,8 @@ def main():
     today = str(
         date.today()
     )
+    
+    backup_id = new_backup_id()
 
     day_dir = (
         WORKSPACE /
@@ -113,7 +115,10 @@ def main():
     )
 
     report = BackupReport()
-
+    
+    logger.info(
+        f"Backup ID: {backup_id}"
+    )
     logger.info(
         f"Workspace: {day_dir}"
     )
@@ -286,11 +291,13 @@ def main():
     )
 
     artifact = build_archive(
+        backup_id=backup_id,
         day=today,
         manifest=manifest,
     )
 
     report.archive(
+        backup_id=artifact.backup_id,
         file=artifact.archive.name,
         sha256=artifact.sha256.name,
         size=artifact.size,
