@@ -53,5 +53,5 @@ class SyncEngine:
 
         Rclone.sync(
             str(self.repository),
-            "backblaze:honestcyber",
+            "BACKBLAZE_REMOTE",
         )

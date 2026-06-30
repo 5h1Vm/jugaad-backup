@@ -38,24 +38,25 @@ def enabled(name: str) -> bool:
 
     return CFG.get(
         name,
-        "false"
+        "false",
     ).lower() == "true"
 
 
 #
-# REPOSITORY Storage
+# Repository
 #
 
 REPOSITORY_ENABLED = enabled(
     "REPOSITORY_ENABLED"
 )
 
-STORAGE_ROOT = Path(
+REPOSITORY_PATH = Path(
     CFG.get(
         "REPOSITORY_PATH",
-        "backupvault"
+        "backupvault",
     )
 )
+
 
 #
 # USB
@@ -77,7 +78,25 @@ USB_LABEL = CFG.get(
 
 USB_BACKUP_PATH = CFG.get(
     "USB_BACKUP_PATH",
+    "Backup",
+)
+
+
+#
+# Backblaze
+#
+
+BACKBLAZE_ENABLED = enabled(
+    "BACKBLAZE_ENABLED"
+)
+
+BACKBLAZE_BUCKET = CFG.get(
+    "BACKBLAZE_BUCKET",
     ""
+)
+
+BACKBLAZE_REMOTE = CFG.get(
+    "BACKBLAZE_REMOTE",
 )
 
 
@@ -106,29 +125,5 @@ S3_ACCESS_KEY = CFG.get(
 
 S3_SECRET_KEY = CFG.get(
     "S3_SECRET_KEY",
-    ""
-)
-
-
-#
-# Backblaze B2
-#
-
-BACKBLAZE_ENABLED = enabled(
-    "BACKBLAZE_ENABLED"
-)
-
-BACKBLAZE_BUCKET = CFG.get(
-    "BACKBLAZE_BUCKET",
-    ""
-)
-
-BACKBLAZE_KEY_ID = CFG.get(
-    "BACKBLAZE_KEY_ID",
-    ""
-)
-
-BACKBLAZE_APPLICATION_KEY = CFG.get(
-    "BACKBLAZE_APPLICATION_KEY",
     ""
 )
